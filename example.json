@@ -1,0 +1,142 @@
+[
+  {
+    "name": "init",
+    "cat": "main,init",
+    "ph": "X",
+    "ts": 1000000,
+    "dur": 1000,
+    "pid": 7083,
+    "tid": 123,
+    "args": null
+  },
+  {
+    "name": "func1",
+    "cat": "main,func",
+    "ph": "X",
+    "ts": 1001000,
+    "dur": 2000,
+    "pid": 7083,
+    "tid": 123,
+    "args": {
+      "arg1": 1,
+      "arg2": {
+        "key": "value"
+      }
+    }
+  },
+  {
+    "name": "func1-1",
+    "cat": "main,func",
+    "ph": "X",
+    "ts": 1001000,
+    "dur": 1000,
+    "pid": 7083,
+    "tid": 123,
+    "args": {
+      "arg1": 1,
+      "arg2": {
+        "key": "value"
+      }
+    }
+  },
+  {
+    "name": "func2",
+    "cat": "main,func",
+    "ph": "X",
+    "ts": 1003000,
+    "dur": 3000,
+    "pid": 7083,
+    "tid": 123,
+    "args": null
+  },
+  {
+    "name": "term",
+    "cat": "main,term",
+    "ph": "X",
+    "ts": 1010000,
+    "dur": 1500,
+    "pid": 7083,
+    "tid": 123,
+    "args": null
+  },
+  {
+    "args": {
+      "name": "hello_world_process_name"
+    },
+    "cat": "",
+    "name": "process_name",
+    "ph": "M",
+    "pid": 7083,
+    "tid": 0,
+    "ts": 0
+  },
+  {
+    "args": {
+      "sort_index": 999
+    },
+    "cat": "",
+    "name": "process_sort_index",
+    "ph": "M",
+    "pid": 7083,
+    "tid": 0,
+    "ts": 0
+  },
+  {
+    "name": "other_func1",
+    "cat": "sub,func",
+    "ph": "B",
+    "pid": 22630,
+    "tid": 22630,
+    "ts": 1002000
+  },
+  {
+    "name": "other_func1",
+    "cat": "sub,func",
+    "ph": "E",
+    "pid": 22630,
+    "tid": 22630,
+    "ts": 1004000
+  },
+  {
+    "args": {
+      "name": "sub_process_name"
+    },
+    "cat": "",
+    "name": "process_name",
+    "ph": "M",
+    "pid": 22630,
+    "tid": 0,
+    "ts": 0
+  },
+  {
+    "args": {
+      "sort_index": 1000
+    },
+    "cat": "",
+    "name": "process_sort_index",
+    "ph": "M",
+    "pid": 22630,
+    "tid": 0,
+    "ts": 0
+  },
+  {
+    "name": "func1->other",
+    "cat": "flow,func",
+    "ph": "s",
+    "ts": 1001500,
+    "pid": 7083,
+    "tid": 123,
+    "id": 200,
+    "args": null
+  },
+  {
+    "name": "func1->other",
+    "cat": "flow,func",
+    "ph": "t",
+    "ts": 1003000,
+    "pid": 22630,
+    "tid": 22630,
+    "id": 200,
+    "args": null
+  }
+]
