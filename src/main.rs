@@ -7,15 +7,20 @@ use std::io::Write;
 use log::info;
 use structopt::StructOpt;
 
+use x2trace::chrome;
 use x2trace::iftrace;
 use x2trace::objdump;
 
 #[derive(StructOpt)]
 struct Cli {
     #[structopt(parse(from_os_str))]
-    input_filepath: std::path::PathBuf,
+    input_files: Vec<std::path::PathBuf>,
     #[structopt(long = "bin", parse(from_os_str), default_value(""))]
     bin_filepath: std::path::PathBuf,
+    #[structopt(long = "text")]
+    text_flag: bool,
+    #[structopt(long = "bit32")]
+    bit32: bool,
 }
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -26,13 +31,18 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     env_logger::init();
 
     let args = Cli::from_args();
-    let filepath = args.input_filepath;
-    let mut events = iftrace::parse_file(&filepath)?;
+    let mut events = if args.text_flag {
+        iftrace::parse_text_files(&args.input_files)?
+    } else {
+        iftrace::parse_binary_files(&args.input_files, args.bit32)?
+    };
 
     let mut address_hash = HashSet::new();
     for event in events.iter() {
         info!("address: {}", &event.name);
-        address_hash.insert(&event.name);
+        if event.name.starts_with("0x") {
+            address_hash.insert(&event.name);
+        }
     }
     let address_list = address_hash.into_iter().collect::<Vec<_>>();
 
