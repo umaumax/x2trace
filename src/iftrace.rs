@@ -73,7 +73,7 @@ fn parse_buffer(buffer: Vec<u8>) -> Result<Vec<chrome::Event>> {
 
     let mut line = String::new();
     while cur.read_line(&mut line).unwrap() > 0 {
-        debug!("this is a debug {:?}", line);
+        debug!("iftracer input line: {:?}", line);
         let event = parse_line_to_event(&line)?;
         events.push(event);
         line.clear();
