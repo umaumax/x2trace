@@ -19,7 +19,10 @@ struct Cli {
 }
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    env::set_var("RUST_LOG", "debug");
+    match env::var("RUST_LOG") {
+        Ok(_) => {}
+        Err(_) => env::set_var("RUST_LOG", "debug"),
+    }
     env_logger::init();
 
     let args = Cli::from_args();
