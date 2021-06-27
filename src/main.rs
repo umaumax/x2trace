@@ -1,3 +1,4 @@
+use std::collections::HashMap;
 use std::collections::HashSet;
 use std::env;
 use std::fs::File;
@@ -34,12 +35,20 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // rename address to function name by objdump
     if !args.bin_filepath.as_path().to_str().unwrap().is_empty() {
-        let add2func_map =
-            objdump::get_addr2func_map("objdump", &args.bin_filepath, &address_list)?;
-        info!("{:?}", add2func_map);
+        let add2info_map =
+            objdump::get_addr2info_map("objdump", &args.bin_filepath, &address_list)?;
+        info!("{:?}", add2info_map);
         for mut event in &mut events {
-            if let Some(func_name) = add2func_map.get(&event.name) {
-                event.name = func_name.to_string();
+            if let Some(info) = add2info_map.get(&event.name) {
+                event.name = info.function_name.to_string();
+                if !info.file_location.is_empty() {
+                    let mut event_args = HashMap::new();
+                    event_args.insert(
+                        String::from("file_location"),
+                        info.file_location.to_string(),
+                    );
+                    event.args = Some(event_args);
+                }
             }
         }
     }

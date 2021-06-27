@@ -8,11 +8,18 @@ use std::process::Stdio;
 
 use anyhow::{anyhow, Result};
 
-pub fn get_addr2func_map(
+#[derive(Debug)]
+pub struct AddressInfomation {
+    pub address: String,
+    pub file_location: String,
+    pub function_name: String,
+}
+
+pub fn get_addr2info_map(
     objdump_command: &str,
     filepath: &PathBuf,
     address_list: &Vec<&String>,
-) -> Result<HashMap<String, String>> {
+) -> Result<HashMap<String, AddressInfomation>> {
     let child = Command::new("objdump")
         .arg("--disassemble")
         .arg("--prefix-addresses")
@@ -33,7 +40,7 @@ pub fn get_addr2func_map(
             stderr_output
         ));
     }
-    let mut addr2func_map: HashMap<String, String> = HashMap::new();
+    let mut addr2info_map: HashMap<String, AddressInfomation> = HashMap::new();
 
     let mut address_list_clone = address_list.clone();
     address_list_clone.sort();
@@ -57,7 +64,12 @@ pub fn get_addr2func_map(
     let mut cur = Cursor::new(output.stdout);
     let mut line = String::new();
 
+    let mut addr_file_location = String::new();
     while cur.read_line(&mut line).unwrap() > 0 && address_list_index < address_list_length {
+        if line.starts_with("/") {
+            // filepath infomation
+            addr_file_location = line.trim_end().to_string();
+        }
         // debug!("objdump output line: {:?}", line);
         if line.starts_with("0000") || line.starts_with("    ") {
         } else {
@@ -69,15 +81,18 @@ pub fn get_addr2func_map(
             return Err(anyhow!("Failed parse line '{}'", line));
         }
         let address = fields[0].trim_start_matches(|c| c == '0' || c == ' ');
-        let func_name = fields[1];
+        let func_name = fields[1].trim_matches(|c| c == '<' || c == '>');
         while address_list_index < address_list_length {
             let target_address = &address_list_sorted[address_list_index];
             if address == target_address {
                 // found target address
-                addr2func_map.insert(
-                    String::from("0x") + &target_address,
-                    String::from(func_name),
-                );
+                let hex_address = String::from("0x") + &target_address;
+                let address_infomation = AddressInfomation {
+                    address: hex_address.clone(),
+                    file_location: addr_file_location.clone(),
+                    function_name: String::from(func_name),
+                };
+                addr2info_map.insert(hex_address, address_infomation);
                 debug!("objdump hit address: {:?}", line);
                 address_list_index += 1;
                 break;
@@ -93,5 +108,5 @@ pub fn get_addr2func_map(
         }
         line.clear();
     }
-    Ok(addr2func_map)
+    Ok(addr2info_map)
 }

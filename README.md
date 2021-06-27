@@ -6,6 +6,13 @@ ltrace,straceなどの出力結果を`trace.json`形式に変換する
 
 マルチスレッドで各スレッドがどのような関数を呼び出しているのかをわかりやすく可視化したいという目的
 
+## for iftrace
+``` bash
+# Mac OS X
+cargo run iftracer.out.XXX --bin $BIN_FILEPATH
+cat out.json | c++filt --strip-underscore > out-c++filt.json
+```
+
 ## how to use
 open `chrome://tracing` and drop output file
 
