@@ -35,8 +35,12 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // rename address to function name by objdump
     if !args.bin_filepath.as_path().to_str().unwrap().is_empty() {
+        let objdump_command = match env::var("OBJDUMP") {
+            Ok(val) => val,
+            Err(_) => "objdump".to_string(),
+        };
         let add2info_map =
-            objdump::get_addr2info_map("objdump", &args.bin_filepath, &address_list)?;
+            objdump::get_addr2info_map(&objdump_command, &args.bin_filepath, &address_list)?;
         info!("{:?}", add2info_map);
         for mut event in &mut events {
             if let Some(info) = add2info_map.get(&event.name) {

@@ -20,7 +20,7 @@ pub fn get_addr2info_map(
     filepath: &PathBuf,
     address_list: &Vec<&String>,
 ) -> Result<HashMap<String, AddressInfomation>> {
-    let child = Command::new("objdump")
+    let child = Command::new(objdump_command)
         .arg("--disassemble")
         .arg("--prefix-addresses")
         .arg("--line-numbers")
