@@ -30,6 +30,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     env_logger::init();
 
     let args = Cli::from_args();
+    info!("[parse trace file step]");
     let mut events = if args.text_flag {
         iftrace::parse_text_files(&args.input_files)?
     } else {
@@ -38,7 +39,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let mut address_hash = HashSet::new();
     for event in events.iter() {
-        info!("address: {}", &event.name);
+        // info!("address: {}", &event.name);
         if event.name.starts_with("0x") {
             address_hash.insert(&event.name);
         }
@@ -47,6 +48,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // rename address to function name by objdump
     if !args.bin_filepath.as_path().to_str().unwrap().is_empty() {
+        info!("[objdump step]");
         let objdump_command = match env::var("OBJDUMP") {
             Ok(val) => val,
             Err(_) => "objdump".to_string(),
@@ -69,8 +71,11 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         }
     }
 
+    info!("[json parse step]");
     let events_json = serde_json::to_string_pretty(&events)?;
-    info!("{}", events_json);
+    // info!("{}", events_json);
+
+    info!("[json output step]");
     let mut outfile = File::create("out.json")?;
     outfile.write_all(events_json.as_bytes())?;
     Ok(())

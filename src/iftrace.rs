@@ -112,7 +112,7 @@ fn parse_text_buffer(buffer: Vec<u8>) -> Result<Vec<chrome::Event>> {
 
     let mut line = String::new();
     while cur.read_line(&mut line).unwrap() > 0 {
-        debug!("iftracer input line: {:?}", line);
+        // debug!("iftracer input line: {:?}", line);
         let event = parse_line_to_event(&line)?;
         events.push(event);
         line.clear();
@@ -171,14 +171,14 @@ fn parse_binary_buffer(
                 }
             }
         };
-        debug!(
-            "timestamp = {:?}, extra_info = {:#02x}",
-            timestamp, extra_info
-        );
+        // debug!(
+        // "timestamp = {:?}, extra_info = {:#02x}",
+        // timestamp, extra_info
+        // );
         let event: chrome::Event = match FromPrimitive::from_u64(extra_info >> (64 - 2)) {
             Some(ExtraFlag::Enter) => {
                 let func_addr = extra_info & ((0x1 << (64 - 2 - 2)) - 1);
-                debug!("enter, func_addr = {:#02x}", func_addr);
+                // debug!("enter, func_addr = {:#02x}", func_addr);
                 chrome::Event {
                     args: None,
                     category: String::from("call"),
@@ -192,7 +192,7 @@ fn parse_binary_buffer(
             }
             Some(ExtraFlag::Exit) => {
                 let func_addr = extra_info & ((0x1 << (64 - 2 - 2)) - 1);
-                debug!("exit, func_addr = {:#02x}", func_addr);
+                // debug!("exit, func_addr = {:#02x}", func_addr);
                 chrome::Event {
                     args: None,
                     category: String::from("call"),
@@ -205,7 +205,7 @@ fn parse_binary_buffer(
                 }
             }
             Some(ExtraFlag::Internal) => {
-                debug!("internal");
+                // debug!("internal");
 
                 let event = extra_info & ((0x1 << (64 - 2)) - 1);
                 let event_flag = event >> (64 - 2 - 1);
@@ -232,7 +232,7 @@ fn parse_binary_buffer(
                 }
             }
             Some(ExtraFlag::External) => {
-                debug!("external");
+                // debug!("external");
 
                 let event = extra_info & ((0x1 << (64 - 2)) - 1);
                 let event_flag = event >> (64 - 2 - 1);

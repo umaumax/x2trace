@@ -54,9 +54,9 @@ pub fn get_addr2info_map(
             }
         })
         .collect();
-    for addr in address_list_sorted.iter() {
-        info!("address: {}", addr);
-    }
+    // for addr in address_list_sorted.iter() {
+    // info!("address: {}", addr);
+    // }
     let mut address_list_index = 0;
     let address_list_length = address_list_sorted.len();
     // TODO: get infomation of file line
@@ -92,14 +92,14 @@ pub fn get_addr2info_map(
                     function_name: String::from(func_name),
                 };
                 addr2info_map.insert(hex_address, address_infomation);
-                debug!("objdump hit address: {:?}", line);
+                // debug!("objdump hit address: {:?}", line);
                 address_list_index += 1;
                 break;
             } else if address < target_address {
                 // continue to search target address
                 break;
             } else {
-                debug!("objdump output line: {:?}", line);
+                // debug!("objdump output line: {:?}", line);
                 // skipped to search target address
                 address_list_index += 1;
                 continue;
