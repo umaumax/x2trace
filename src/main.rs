@@ -7,7 +7,6 @@ use std::io::Write;
 use log::info;
 use structopt::StructOpt;
 
-use x2trace::chrome;
 use x2trace::iftrace;
 use x2trace::objdump;
 

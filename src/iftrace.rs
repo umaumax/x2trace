@@ -1,9 +1,8 @@
 use anyhow::{anyhow, Result};
-use byteorder::{BigEndian, LittleEndian, ReadBytesExt, WriteBytesExt};
+use byteorder::{LittleEndian, ReadBytesExt};
 use num_derive::FromPrimitive;
 use num_traits::FromPrimitive;
 
-use std::collections::HashMap;
 use std::fs;
 use std::fs::File;
 use std::io::BufRead;
