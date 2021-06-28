@@ -151,6 +151,10 @@ fn parse_binary_buffer(
     let cur_len = cur.get_ref().len();
     while (cur.position() as usize) < cur_len - 1 {
         let timestamp = Duration::from_micros(cur.read_u64::<LittleEndian>().unwrap());
+        if timestamp.is_zero() {
+            log::warn!("get zero timestamp, maybe broken file");
+            break;
+        }
         let extra_info = if !bit32_flag {
             cur.read_u64::<LittleEndian>().unwrap()
         } else {
