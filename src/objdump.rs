@@ -70,7 +70,7 @@ pub fn get_addr2info_map(
             addr_file_location = line.trim_end().to_string();
         }
         // debug!("objdump output line: {:?}", line);
-        if line.starts_with("0000") || line.starts_with("    ") {
+        if line.starts_with("0") || line.starts_with(" ") {
         } else {
             line.clear();
             continue;
