@@ -148,10 +148,11 @@ fn parse_binary_buffer(
     let mut events: Vec<chrome::Event> = Vec::with_capacity(10);
     let mut cur = Cursor::new(buffer);
 
+    let zero_duration = Duration::new(0, 0);
     let cur_len = cur.get_ref().len();
     while (cur.position() as usize) < cur_len - 1 {
         let timestamp = Duration::from_micros(cur.read_u64::<LittleEndian>().unwrap());
-        if timestamp.is_zero() {
+        if timestamp == zero_duration {
             log::warn!("get zero timestamp, maybe broken file");
             break;
         }
