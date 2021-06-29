@@ -1,12 +1,14 @@
 # x2trace
 
-ltrace,straceなどの出力結果を`trace.json`形式に変換する
-
-現状，awkで代用できているので，awkで代用できないようなケースに対してのツールとしたい...
+ltrace,straceなどのトレーサーの出力結果を`trace.json`形式に変換する
 
 マルチスレッドで各スレッドがどのような関数を呼び出しているのかをわかりやすく可視化したいという目的
 
-## for iftrace
+* [x] `ltrace`: by awk tool
+* [x] `strace`: by awk tool
+* [x] `iftraer`: by rust tool
+
+## for [umaumax/iftracer]( https://github.com/umaumax/iftracer/tree/master/ )
 ``` bash
 # Mac OS X
 cargo run iftracer.out.XXX --bin $BIN_FILEPATH
@@ -21,6 +23,8 @@ open `chrome://tracing` and drop output file
   * [measureme/main\.rs at master · rust\-lang/measureme]( https://github.com/rust-lang/measureme/blob/master/crox/src/main.rs )
 * [パフォーマンス計測に困らない！tracing活用術100 \- Qiita]( https://qiita.com/keishi/items/5f1af0851901e9021488 )
   * `trace.json`のGUIツールの使い方
+
+----
 
 ## trace.jsonの仕様
 [Trace Event Format \- Google Docs]( https://docs.google.com/document/d/1CvAClvFfyA5R-PhYUmn5OOQtYMH4h6I0nSsKchNAySU/preview# )
@@ -61,7 +65,6 @@ JSON Object Formatの`traceEvents`がJSON Array Formatと一致することも�
  }
 }
 ```
-
 
 #### Instant Events
 細長い三角形であるポイントにおける何らかのイベントの情報を表示する
