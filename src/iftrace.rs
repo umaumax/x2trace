@@ -3,6 +3,7 @@ use byteorder::{LittleEndian, ReadBytesExt};
 use num_derive::FromPrimitive;
 use num_traits::FromPrimitive;
 
+use std::collections::HashMap;
 use std::fs;
 use std::fs::File;
 use std::io::BufRead;
@@ -153,6 +154,7 @@ fn parse_binary_buffer(
 
     let zero_duration = Duration::new(0, 0);
     let cur_len = cur.get_ref().len();
+    let mut timestamp_stack = Vec::<Duration>::new();
     while (cur.position() as usize) < cur_len - 1 {
         let timestamp = Duration::from_micros(cur.read_u64::<LittleEndian>().unwrap());
         if timestamp == zero_duration {
@@ -183,7 +185,7 @@ fn parse_binary_buffer(
         // "timestamp = {:?}, extra_info = {:#02x}",
         // timestamp, extra_info
         // );
-        let event: chrome::Event = match FromPrimitive::from_u64(extra_info >> (64 - 2)) {
+        let mut event: chrome::Event = match FromPrimitive::from_u64(extra_info >> (64 - 2)) {
             Some(ExtraFlag::Enter) => {
                 let func_addr = extra_info & ((0x1 << (64 - 2 - 2)) - 1);
                 // debug!("enter, func_addr = {:#02x}", func_addr);
@@ -278,6 +280,23 @@ fn parse_binary_buffer(
                 return Err(anyhow!("Failed parse binary at {}", cur.position()));
             }
         };
+        // if timestamp is same chrome tracing viewer doesn't show the item,
+        // so add virtual duration to end timestamp
+        match event.event_type {
+            chrome::EventType::DurationBegin => {
+                timestamp_stack.push(timestamp);
+            }
+            chrome::EventType::DurationEnd => {
+                let begin_timestamp = timestamp_stack.pop().unwrap();
+                if begin_timestamp == timestamp {
+                    let virtual_duration = Duration::from_nanos(200);
+                    event.timestamp = event.timestamp.add(virtual_duration);
+                    let event_args = event.args.get_or_insert(HashMap::new());
+                    event_args.insert(String::from("virtual_duration"), String::from("true"));
+                }
+            }
+            _ => {}
+        }
         events.push(event);
     }
     Ok(events)

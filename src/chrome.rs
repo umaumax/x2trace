@@ -8,6 +8,14 @@ fn as_micros<S: Serializer>(d: &Duration, s: S) -> Result<S::Ok, S::Error> {
     s.serialize_u64(v)
 }
 
+fn as_float_micros<S: Serializer>(d: &Duration, s: S) -> Result<S::Ok, S::Error> {
+    if d.subsec_nanos() % 1000 == 0 {
+        return as_micros(d, s);
+    }
+    let v = (d.as_secs() * 1_000_000) as f64 + (d.subsec_nanos() as f64 / 1_000.0);
+    s.serialize_f64(v)
+}
+
 #[derive(Clone, Copy, Eq, PartialEq, Serialize, Debug)]
 pub enum EventType {
     #[serde(rename = "B")]
@@ -67,10 +75,10 @@ pub struct Event {
     pub category: String,
     #[serde(rename = "ph")]
     pub event_type: EventType,
-    #[serde(rename = "ts", serialize_with = "as_micros")]
+    #[serde(rename = "ts", serialize_with = "as_float_micros")]
     #[serde()]
     pub timestamp: Duration,
-    #[serde(rename = "dur", serialize_with = "as_micros")]
+    #[serde(rename = "dur", serialize_with = "as_float_micros")]
     pub duration: Duration,
     #[serde(rename = "pid")]
     pub process_id: u32,
