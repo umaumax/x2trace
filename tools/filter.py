@@ -77,7 +77,10 @@ def main():
 
     valid_index_list.sort()
 
-    filtered_json_data = itemgetter(*valid_index_list)(json_root)
+    filtered_json_data = []
+    if len(valid_index_list) != 0:
+        filtered_json_data = itemgetter(*valid_index_list)(json_root)
+
     print(json.dumps(list(filtered_json_data)))
 
 
