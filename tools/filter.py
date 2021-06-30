@@ -14,7 +14,7 @@ parser.add_argument('-b',
 parser.add_argument('-e',
                     '--end-timestamp',
                     help='end timestamp[ms]',
-                    default=1000,
+                    default=1000 * 3600,
                     type=float)
 parser.add_argument('--include',
                     '--in',
