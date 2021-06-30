@@ -8,7 +8,7 @@ fn as_micros<S: Serializer>(d: &Duration, s: S) -> Result<S::Ok, S::Error> {
     s.serialize_u64(v)
 }
 
-#[derive(Clone, Copy, Eq, PartialEq, Serialize)]
+#[derive(Clone, Copy, Eq, PartialEq, Serialize, Debug)]
 pub enum EventType {
     #[serde(rename = "B")]
     DurationBegin,
@@ -59,7 +59,7 @@ impl Default for EventType {
     }
 }
 
-#[derive(Serialize, Clone, Default)]
+#[derive(Serialize, Clone, Default, Debug)]
 pub struct Event {
     #[serde(rename = "name")]
     pub name: String,
