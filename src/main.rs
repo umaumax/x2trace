@@ -7,6 +7,7 @@ use std::io::Write;
 use log::info;
 use structopt::StructOpt;
 
+use x2trace::chrome;
 use x2trace::iftrace;
 use x2trace::objdump;
 
@@ -59,13 +60,15 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         for mut event in &mut events {
             if let Some(info) = add2info_map.get(&event.name) {
                 event.name = info.function_name.to_string();
+                if event.event_type == chrome::EventType::DurationEnd {
+                    continue;
+                }
                 if !info.file_location.is_empty() {
-                    let mut event_args = HashMap::new();
+                    let event_args = event.args.get_or_insert(HashMap::new());
                     event_args.insert(
                         String::from("file_location"),
                         info.file_location.to_string(),
                     );
-                    event.args = Some(event_args);
                 }
             }
         }
