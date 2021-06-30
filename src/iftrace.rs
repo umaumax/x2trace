@@ -8,6 +8,9 @@ use std::fs::File;
 use std::io::BufRead;
 use std::io::Cursor;
 use std::io::Read;
+use std::io::Seek;
+use std::io::SeekFrom;
+use std::ops::Add;
 use std::path::PathBuf;
 use std::time::Duration;
 
@@ -254,8 +257,11 @@ fn parse_binary_buffer(
                     }
                 };
 
-                let mut text = Vec::with_capacity(text_size as usize);
+                let mut text = vec![0; text_size as usize];
                 cur.read_exact(&mut text).unwrap();
+                let dummy_padding_size = (((text_size) + (8 - 1)) & !(8 - 1)) - text_size;
+                cur.seek(SeekFrom::Current(dummy_padding_size as i64))
+                    .unwrap();
 
                 chrome::Event {
                     args: None,
