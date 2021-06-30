@@ -13,6 +13,11 @@ parser.add_argument(
     help='min duration of outlier[ms]',
     default=100,
     type=float)
+parser.add_argument(
+    '--th',
+    help='threshold of outlier',
+    default=100.0,
+    type=float)
 parser.add_argument('input')
 parser.add_argument('args', nargs='*')
 
@@ -34,6 +39,8 @@ def main():
     json_file = open(args.input, 'r')
     json_root = json.load(json_file)
 
+    th = args.th
+
     func_map = {}
     for v in json_root:
         name = v['name']
@@ -51,7 +58,7 @@ def main():
     for func_name in func_map.keys():
         durations = func_map[func_name]['durations']
         if len(durations) > 100:
-            outliers = find_outliers(durations)
+            outliers = find_outliers(durations, th)
             outliers = range_of_interest_outlier_filter(outliers)
             if len(outliers) > 0:
                 median = np.median(durations)
