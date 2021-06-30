@@ -16,4 +16,6 @@ pip3 install numpy
 ### filter.py
 ``` bash
 ./filter.py -b 2000 -e 3000 chrome-tracing.json
+
+./filter.py --in '.*hoge.*lambda.*' chrome-tracing.json
 ```
