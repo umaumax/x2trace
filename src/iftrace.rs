@@ -1,7 +1,6 @@
 use anyhow::{anyhow, Result};
 use byteorder::{LittleEndian, ReadBytesExt};
-use num_derive::FromPrimitive;
-use num_traits::FromPrimitive;
+use num_traits::{FromPrimitive, ToPrimitive};
 
 use std::collections::HashMap;
 use std::fs;
@@ -153,32 +152,47 @@ fn parse_binary_buffer(
 
     let zero_duration = Duration::new(0, 0);
     let cur_len = cur.get_ref().len();
+    let mut pre_timestamp = zero_duration;
     let mut event_stack = Vec::<chrome::Event>::new();
     while (cur.position() as usize) < cur_len - 1 {
-        let timestamp = Duration::from_micros(cur.read_u64::<LittleEndian>().unwrap());
+        let mut timestamp_data = cur.read_i32::<LittleEndian>().unwrap();
+        let mut exit_flag = false;
+        if timestamp_data < 0 {
+            timestamp_data *= -1;
+            exit_flag = true;
+        }
+        let mut timestamp = Duration::from_micros(timestamp_data as u64);
         if timestamp == zero_duration {
             log::warn!("get zero timestamp, maybe broken file");
             break;
         }
-        let extra_info = if !bit32_flag {
-            cur.read_u64::<LittleEndian>().unwrap()
+        // sub offset to distinguish broken file
+        timestamp -= Duration::from_micros(1);
+        timestamp += pre_timestamp;
+        let extra_info = if !exit_flag {
+            let extra_info = if !bit32_flag {
+                cur.read_u64::<LittleEndian>().unwrap()
+            } else {
+                let extra_info_32bit = cur.read_u32::<LittleEndian>().unwrap();
+                match FromPrimitive::from_u64((extra_info_32bit >> (32 - 2)) as u64) {
+                    Some(ExtraFlag::Enter) | Some(ExtraFlag::Exit) => {
+                        ((extra_info_32bit as u64 >> (32 - 2)) << (64 - 2)
+                            | extra_info_32bit as u64 & ((0x1 << (32 - 2)) - 1))
+                            as u64
+                    }
+                    Some(ExtraFlag::Internal) | Some(ExtraFlag::External) => {
+                        ((extra_info_32bit as u64 >> (32 - 3)) << (64 - 3)
+                            | extra_info_32bit as u64 & ((0x1 << (32 - 3)) - 1))
+                            as u64
+                    }
+                    None => {
+                        return Err(anyhow!("Failed parse binary at {}", cur.position()));
+                    }
+                }
+            };
+            extra_info
         } else {
-            let extra_info_32bit = cur.read_u32::<LittleEndian>().unwrap();
-            match FromPrimitive::from_u64((extra_info_32bit >> (32 - 2)) as u64) {
-                Some(ExtraFlag::Enter) | Some(ExtraFlag::Exit) => {
-                    ((extra_info_32bit as u64 >> (32 - 2)) << (64 - 2)
-                        | extra_info_32bit as u64 & ((0x1 << (32 - 2)) - 1))
-                        as u64
-                }
-                Some(ExtraFlag::Internal) | Some(ExtraFlag::External) => {
-                    ((extra_info_32bit as u64 >> (32 - 3)) << (64 - 3)
-                        | extra_info_32bit as u64 & ((0x1 << (32 - 3)) - 1))
-                        as u64
-                }
-                None => {
-                    return Err(anyhow!("Failed parse binary at {}", cur.position()));
-                }
-            }
+            ToPrimitive::to_u64(&ExtraFlag::Exit).unwrap() << (64 - 2)
         };
         // debug!(
         // "timestamp = {:?}, extra_info = {:#02x}",
@@ -258,18 +272,23 @@ fn parse_binary_buffer(
                     }
                 };
 
-                let mut text = vec![0; text_size as usize];
-                cur.read_exact(&mut text).unwrap();
-                let dummy_padding_size = (((text_size) + (8 - 1)) & !(8 - 1)) - text_size;
-                cur.seek(SeekFrom::Current(dummy_padding_size as i64))
-                    .unwrap();
+                let text = if event_type == chrome::EventType::DurationBegin {
+                    let mut text = vec![0; text_size as usize];
+                    cur.read_exact(&mut text).unwrap();
+                    let dummy_padding_size = (((text_size) + (8 - 1)) & !(8 - 1)) - text_size;
+                    cur.seek(SeekFrom::Current(dummy_padding_size as i64))
+                        .unwrap();
+                    String::from_utf8(text).unwrap()
+                } else {
+                    String::from("")
+                };
 
                 chrome::Event {
                     args: None,
                     category: String::from("external"),
                     duration: Duration::from_millis(0),
                     event_type: event_type,
-                    name: String::from_utf8(text).unwrap(),
+                    name: text,
                     process_id: pid,
                     thread_id: tid,
                     timestamp: timestamp,
@@ -301,6 +320,13 @@ fn parse_binary_buffer(
             }
             _ => {}
         }
+        pre_timestamp = timestamp;
+    }
+    if event_stack.len() > 0 {
+        log::warn!(
+            "parsed event stack size is {}, maybe broken file",
+            event_stack.len()
+        );
     }
     Ok(events)
 }
