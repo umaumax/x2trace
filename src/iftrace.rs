@@ -11,7 +11,6 @@ use std::io::Cursor;
 use std::io::Read;
 use std::io::Seek;
 use std::io::SeekFrom;
-use std::ops::Add;
 use std::path::PathBuf;
 use std::time::Duration;
 
@@ -185,7 +184,7 @@ fn parse_binary_buffer(
         // "timestamp = {:?}, extra_info = {:#02x}",
         // timestamp, extra_info
         // );
-        let mut event: chrome::Event = match FromPrimitive::from_u64(extra_info >> (64 - 2)) {
+        let event: chrome::Event = match FromPrimitive::from_u64(extra_info >> (64 - 2)) {
             Some(ExtraFlag::Enter) => {
                 let func_addr = extra_info & ((0x1 << (64 - 2 - 2)) - 1);
                 // debug!("enter, func_addr = {:#02x}", func_addr);
