@@ -51,9 +51,15 @@ def main():
         stack = func_map[name]['stack']
         if ph == 'B':
             stack.append(ts)
-        if ph == 'E':
+        elif ph == 'E':
             duration = ts - stack.pop()
             func_map[name]['durations'].append(duration / 1000.0)
+        elif ph == 'X':
+            duration = v['dur']
+            func_map[name]['durations'].append(duration / 1000.0)
+        else:
+            print("invalid ph:{}".format(ph), file=sys.stderr)
+            return 1
 
     for func_name in func_map.keys():
         durations = func_map[func_name]['durations']

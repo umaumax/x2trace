@@ -154,7 +154,7 @@ fn parse_binary_buffer(
 
     let zero_duration = Duration::new(0, 0);
     let cur_len = cur.get_ref().len();
-    let mut timestamp_stack = Vec::<Duration>::new();
+    let mut event_stack = Vec::<chrome::Event>::new();
     while (cur.position() as usize) < cur_len - 1 {
         let timestamp = Duration::from_micros(cur.read_u64::<LittleEndian>().unwrap());
         if timestamp == zero_duration {
@@ -284,20 +284,24 @@ fn parse_binary_buffer(
         // so add virtual duration to end timestamp
         match event.event_type {
             chrome::EventType::DurationBegin => {
-                timestamp_stack.push(timestamp);
+                event_stack.push(event);
             }
             chrome::EventType::DurationEnd => {
-                let begin_timestamp = timestamp_stack.pop().unwrap();
-                if begin_timestamp == timestamp {
+                let begin_event = event_stack.pop().unwrap();
+                let mut target_event = begin_event;
+                let mut duration = timestamp - target_event.timestamp;
+                if duration == zero_duration {
                     let virtual_duration = Duration::from_nanos(200);
-                    event.timestamp = event.timestamp.add(virtual_duration);
-                    let event_args = event.args.get_or_insert(HashMap::new());
+                    duration = virtual_duration;
+                    let event_args = target_event.args.get_or_insert(HashMap::new());
                     event_args.insert(String::from("virtual_duration"), String::from("true"));
                 }
+                target_event.duration = duration;
+                target_event.event_type = chrome::EventType::Complete;
+                events.push(target_event);
             }
             _ => {}
         }
-        events.push(event);
     }
     Ok(events)
 }

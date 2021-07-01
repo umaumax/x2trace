@@ -48,12 +48,21 @@ def main():
         stack = func_map[name]['stack']
         if ph == 'B':
             stack.append((index, ts))
-        if ph == 'E':
+        elif ph == 'E':
             (begin_index, begin_ts) = stack.pop()
             end_index = index
             end_ts = ts
             func_map[name]['list'].append(
                 (begin_index, end_index, begin_ts, end_ts))
+        elif ph == 'X':
+            duration = v['dur']
+            begin_ts = ts
+            end_ts = ts + duration
+            func_map[name]['list'].append(
+                (index, -1, begin_ts, end_ts))
+        else:
+            print("invalid ph:{}".format(ph), file=sys.stderr)
+            return 1
         index += 1
 
     interest_begin_ts = args.begin_timestamp * 1000.0 + base_timestamp
@@ -73,7 +82,9 @@ def main():
         for info in func_map[func_name]['list']:
             (begin_index, end_index, begin_ts, end_ts) = info
             if begin_ts < interest_end_ts and interest_begin_ts < end_ts:
-                valid_index_list += [begin_index, end_index]
+                valid_index_list.append(begin_index)
+                if end_index >= 0:
+                    valid_index_list.append(end_index)
 
     valid_index_list.sort()
 
