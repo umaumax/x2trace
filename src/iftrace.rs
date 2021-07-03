@@ -198,7 +198,8 @@ fn parse_binary_buffer(
         // "timestamp = {:?}, extra_info = {:#02x}",
         // timestamp, extra_info
         // );
-        let event: chrome::Event = match FromPrimitive::from_u64(extra_info >> (64 - 2)) {
+        let extra_flag = FromPrimitive::from_u64(extra_info >> (64 - 2));
+        let event: chrome::Event = match extra_flag {
             Some(ExtraFlag::Enter) => {
                 let func_addr = extra_info & ((0x1 << (64 - 2 - 2)) - 1);
                 // debug!("enter, func_addr = {:#02x}", func_addr);
