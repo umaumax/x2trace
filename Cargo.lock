@@ -401,6 +401,7 @@ version = "0.1.0"
 dependencies = [
  "anyhow",
  "byteorder",
+ "clap",
  "cpp_demangle",
  "env_logger",
  "log",

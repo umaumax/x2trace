@@ -13,18 +13,27 @@ use x2trace::iftrace;
 use x2trace::objdump;
 
 #[derive(StructOpt)]
+#[structopt(setting(clap::AppSettings::ColoredHelp))]
 struct Cli {
-    #[structopt(parse(from_os_str))]
+    #[structopt(parse(from_os_str), help = "Target trace log files")]
     input_files: Vec<std::path::PathBuf>,
-    #[structopt(long = "bin", parse(from_os_str), default_value(""))]
+    #[structopt(
+        long = "bin",
+        parse(from_os_str),
+        default_value(""),
+        help = "Target binary filepath"
+    )]
     bin_filepath: std::path::PathBuf,
-    #[structopt(long = "text")]
+    #[structopt(long = "text", help = "Deprecated option")]
     text_flag: bool,
-    #[structopt(long = "bit32")]
+    #[structopt(long = "bit32", help = "Target arch is 32bit or not")]
     bit32: bool,
-    #[structopt(long = "function-file-location")]
+    #[structopt(
+        long = "function-file-location",
+        help = "Disable add function file location to output args field"
+    )]
     function_file_location: bool,
-    #[structopt(long = "no-demangle")]
+    #[structopt(long = "no-demangle", help = "Disable demangle function name")]
     no_demangle: bool,
 }
 
