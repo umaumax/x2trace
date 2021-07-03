@@ -10,9 +10,7 @@ ltrace,straceなどのトレーサーの出力結果を`trace.json`形式に変�
 
 ## for [umaumax/iftracer]( https://github.com/umaumax/iftracer/tree/master/ )
 ``` bash
-# Mac OS X
 cargo run iftracer.out.XXX --bin $BIN_FILEPATH
-cat out.json | c++filt --strip-underscore > out-c++filt.json
 ```
 
 ## how to use
