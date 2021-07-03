@@ -1,6 +1,6 @@
 use anyhow::{anyhow, Result};
 use byteorder::{LittleEndian, ReadBytesExt};
-use num_traits::{FromPrimitive, ToPrimitive};
+use num_traits::FromPrimitive;
 
 use std::collections::HashMap;
 use std::fs;
@@ -124,21 +124,23 @@ fn parse_text_buffer(buffer: Vec<u8>) -> Result<Vec<chrome::Event>> {
 
 #[derive(FromPrimitive, ToPrimitive)]
 enum ExtraFlag {
-    Enter = 0x0,
-    Exit = 0x1,
-    Internal = 0x2,
-    External = 0x3,
+    NormalEnter = 0x0,
+    InternalOrExternalEnter = 0x1,
+    InternalOrNormalExit = 0x2,
+    ExternalExit = 0x3,
 }
 
-#[derive(FromPrimitive, ToPrimitive)]
-enum InternalProcessFlag {
-    Enter = 0x0,
-    Exit = 0x1,
-}
-#[derive(FromPrimitive, ToPrimitive)]
-enum ExternalProcessFlag {
-    Enter = 0x0,
-    Exit = 0x1,
+fn update_to_complete_event(event: &mut chrome::Event, end_timestamp: Duration) {
+    let mut duration = end_timestamp - event.timestamp;
+    let zero_duration = Duration::new(0, 0);
+    if duration == zero_duration {
+        let virtual_duration = Duration::from_nanos(200);
+        duration = virtual_duration;
+        let event_args = event.args.get_or_insert(HashMap::new());
+        event_args.insert(String::from("virtual_duration"), String::from("true"));
+    }
+    event.duration = duration;
+    event.event_type = chrome::EventType::Complete;
 }
 
 fn parse_binary_buffer(
@@ -150,58 +152,32 @@ fn parse_binary_buffer(
     let mut events: Vec<chrome::Event> = Vec::with_capacity(10);
     let mut cur = Cursor::new(buffer);
 
-    let zero_duration = Duration::new(0, 0);
     let cur_len = cur.get_ref().len();
-    let mut pre_timestamp = zero_duration;
+    let mut pre_timestamp = Duration::new(0, 0);
     let mut event_stack = Vec::<chrome::Event>::new();
     while (cur.position() as usize) < cur_len - 1 {
-        let mut timestamp_data = cur.read_i32::<LittleEndian>().unwrap();
-        let mut exit_flag = false;
-        if timestamp_data < 0 {
-            timestamp_data *= -1;
-            exit_flag = true;
-        }
-        let mut timestamp = Duration::from_micros(timestamp_data as u64);
-        if timestamp == zero_duration {
+        let timestamp_with_extra_flag = cur.read_u32::<LittleEndian>().unwrap();
+        if timestamp_with_extra_flag == 0 {
             log::warn!("get zero timestamp, maybe broken file");
             break;
         }
-        // sub offset to distinguish broken file
-        timestamp -= Duration::from_micros(1);
+        // sub offset which used to distinguish broken file or not
+        let dummy_offset = 1;
+        let extra_flag =
+            FromPrimitive::from_u32((timestamp_with_extra_flag - dummy_offset) >> (32 - 2))
+                .unwrap();
+        let mut timestamp =
+            Duration::from_micros((timestamp_with_extra_flag & !((0x3) << (32 - 2))) as u64);
+
         timestamp += pre_timestamp;
-        let extra_info = if !exit_flag {
-            let extra_info = if !bit32_flag {
-                cur.read_u64::<LittleEndian>().unwrap()
-            } else {
-                let extra_info_32bit = cur.read_u32::<LittleEndian>().unwrap();
-                match FromPrimitive::from_u64((extra_info_32bit >> (32 - 2)) as u64) {
-                    Some(ExtraFlag::Enter) | Some(ExtraFlag::Exit) => {
-                        ((extra_info_32bit as u64 >> (32 - 2)) << (64 - 2)
-                            | extra_info_32bit as u64 & ((0x1 << (32 - 2)) - 1))
-                            as u64
-                    }
-                    Some(ExtraFlag::Internal) | Some(ExtraFlag::External) => {
-                        ((extra_info_32bit as u64 >> (32 - 3)) << (64 - 3)
-                            | extra_info_32bit as u64 & ((0x1 << (32 - 3)) - 1))
-                            as u64
-                    }
-                    None => {
-                        return Err(anyhow!("Failed parse binary at {}", cur.position()));
-                    }
-                }
-            };
-            extra_info
-        } else {
-            ToPrimitive::to_u64(&ExtraFlag::Exit).unwrap() << (64 - 2)
-        };
-        // debug!(
-        // "timestamp = {:?}, extra_info = {:#02x}",
-        // timestamp, extra_info
-        // );
-        let extra_flag = FromPrimitive::from_u64(extra_info >> (64 - 2));
+
         let event: chrome::Event = match extra_flag {
-            Some(ExtraFlag::Enter) => {
-                let func_addr = extra_info & ((0x1 << (64 - 2 - 2)) - 1);
+            ExtraFlag::NormalEnter => {
+                let func_addr = if !bit32_flag {
+                    cur.read_u64::<LittleEndian>().unwrap()
+                } else {
+                    cur.read_u32::<LittleEndian>().unwrap() as u64
+                };
                 // debug!("enter, func_addr = {:#02x}", func_addr);
                 chrome::Event {
                     args: None,
@@ -214,91 +190,47 @@ fn parse_binary_buffer(
                     timestamp: timestamp,
                 }
             }
-            Some(ExtraFlag::Exit) => {
-                let func_addr = extra_info & ((0x1 << (64 - 2 - 2)) - 1);
-                // debug!("exit, func_addr = {:#02x}", func_addr);
+            ExtraFlag::InternalOrExternalEnter => {
+                // debug!("internal or external enter, func_addr");
                 chrome::Event {
                     args: None,
-                    category: String::from("call"),
+                    category: String::from("internal or external"),
                     duration: Duration::from_millis(0),
-                    event_type: chrome::EventType::DurationEnd,
-                    name: String::from("0x") + &format!("{:x}", func_addr),
+                    event_type: chrome::EventType::DurationBegin,
+                    name: String::from(""),
                     process_id: pid,
                     thread_id: tid,
                     timestamp: timestamp,
                 }
             }
-            Some(ExtraFlag::Internal) => {
-                // debug!("internal");
-
-                let event = extra_info & ((0x1 << (64 - 2)) - 1);
-                let event_flag = event >> (64 - 2 - 1);
-
-                let event_type = match FromPrimitive::from_u64(event_flag) {
-                    Some(InternalProcessFlag::Enter) => chrome::EventType::DurationBegin,
-                    Some(InternalProcessFlag::Exit) => chrome::EventType::DurationEnd,
-                    None => {
-                        return Err(anyhow!(
-                            "Failed parse internal process flag at {}",
-                            cur.position()
-                        ));
-                    }
-                };
-                chrome::Event {
-                    args: None,
-                    category: String::from("internal"),
-                    duration: Duration::from_millis(0),
-                    event_type: event_type,
-                    name: String::from("[internal processing]"),
-                    process_id: pid,
-                    thread_id: tid,
-                    timestamp: timestamp,
+            ExtraFlag::InternalOrNormalExit => {
+                // debug!("internal or normal exit");
+                let mut event = event_stack.pop().unwrap();
+                update_to_complete_event(&mut event, timestamp);
+                if event.name == "" {
+                    event.category = String::from("internal");
+                    event.name = String::from("[internal]");
                 }
+                event
             }
-            Some(ExtraFlag::External) => {
-                // debug!("external");
+            ExtraFlag::ExternalExit => {
+                // debug!("external exit");
 
-                let event = extra_info & ((0x1 << (64 - 2)) - 1);
-                let event_flag = event >> (64 - 2 - 1);
-                let text_size = event & ((0x1 << (64 - 2 - 1)) - 1);
+                let text_size = cur.read_u32::<LittleEndian>().unwrap();
+                let mut text_buf = vec![0; text_size as usize];
+                cur.read_exact(&mut text_buf).unwrap();
+                let text_align = 4;
+                let dummy_padding_size =
+                    (((text_size) + (text_align - 1)) & !(text_align - 1)) - text_size;
+                cur.seek(SeekFrom::Current(dummy_padding_size as i64))
+                    .unwrap();
+                let text = String::from_utf8(text_buf).unwrap();
 
-                let event_type = match FromPrimitive::from_u64(event_flag) {
-                    Some(ExternalProcessFlag::Enter) => chrome::EventType::DurationBegin,
-                    Some(ExternalProcessFlag::Exit) => chrome::EventType::DurationEnd,
-                    None => {
-                        return Err(anyhow!(
-                            "Failed parse external process flag at {}",
-                            cur.position()
-                        ));
-                    }
-                };
-
-                let text = if event_type == chrome::EventType::DurationBegin {
-                    let mut text = vec![0; text_size as usize];
-                    cur.read_exact(&mut text).unwrap();
-                    let text_align = 4;
-                    let dummy_padding_size =
-                        (((text_size) + (text_align - 1)) & !(text_align - 1)) - text_size;
-                    cur.seek(SeekFrom::Current(dummy_padding_size as i64))
-                        .unwrap();
-                    String::from_utf8(text).unwrap()
-                } else {
-                    String::from("")
-                };
-
-                chrome::Event {
-                    args: None,
-                    category: String::from("external"),
-                    duration: Duration::from_millis(0),
-                    event_type: event_type,
-                    name: text,
-                    process_id: pid,
-                    thread_id: tid,
-                    timestamp: timestamp,
-                }
-            }
-            None => {
-                return Err(anyhow!("Failed parse binary at {}", cur.position()));
+                let mut event = event_stack.pop().unwrap();
+                event.category = String::from("external");
+                event.name = text;
+                update_to_complete_event(&mut event, timestamp);
+                event
             }
         };
         // if timestamp is same chrome tracing viewer doesn't show the item,
@@ -307,21 +239,12 @@ fn parse_binary_buffer(
             chrome::EventType::DurationBegin => {
                 event_stack.push(event);
             }
-            chrome::EventType::DurationEnd => {
-                let begin_event = event_stack.pop().unwrap();
-                let mut target_event = begin_event;
-                let mut duration = timestamp - target_event.timestamp;
-                if duration == zero_duration {
-                    let virtual_duration = Duration::from_nanos(200);
-                    duration = virtual_duration;
-                    let event_args = target_event.args.get_or_insert(HashMap::new());
-                    event_args.insert(String::from("virtual_duration"), String::from("true"));
-                }
-                target_event.duration = duration;
-                target_event.event_type = chrome::EventType::Complete;
-                events.push(target_event);
+            chrome::EventType::Complete => {
+                events.push(event);
             }
-            _ => {}
+            _ => {
+                return Err(anyhow!("invalid event type '{:?}'", event.event_type));
+            }
         }
         pre_timestamp = timestamp;
     }
