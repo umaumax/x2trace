@@ -21,6 +21,8 @@ struct Cli {
     text_flag: bool,
     #[structopt(long = "bit32")]
     bit32: bool,
+    #[structopt(long = "function-file-location")]
+    function_file_location: bool,
 }
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -63,7 +65,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 if event.event_type == chrome::EventType::DurationEnd {
                     continue;
                 }
-                if !info.file_location.is_empty() {
+                if args.function_file_location && !info.file_location.is_empty() {
                     let event_args = event.args.get_or_insert(HashMap::new());
                     event_args.insert(
                         String::from("file_location"),
