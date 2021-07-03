@@ -4,6 +4,7 @@ use std::env;
 use std::fs::File;
 use std::io::Write;
 
+use anyhow::Result;
 use cpp_demangle::Symbol;
 use log::info;
 use structopt::StructOpt;
@@ -14,7 +15,7 @@ use x2trace::objdump;
 
 #[derive(StructOpt)]
 #[structopt(setting(clap::AppSettings::ColoredHelp))]
-struct Cli {
+struct IftracerCli {
     #[structopt(parse(from_os_str), help = "Target trace log files")]
     input_files: Vec<std::path::PathBuf>,
     #[structopt(
@@ -37,14 +38,35 @@ struct Cli {
     no_demangle: bool,
 }
 
-fn main() -> Result<(), Box<dyn std::error::Error>> {
+#[derive(StructOpt)]
+#[structopt(setting(clap::AppSettings::ColoredHelp))]
+struct Cli {
+    #[structopt(subcommand)]
+    pub sub: CliSubCommands,
+}
+
+#[derive(StructOpt)]
+enum CliSubCommands {
+    #[structopt(name = "iftracer", about = "Select iftracer")]
+    #[structopt(setting(clap::AppSettings::ColoredHelp))]
+    IftracerCli(IftracerCli),
+}
+
+fn main() -> Result<()> {
     match env::var("RUST_LOG") {
         Ok(_) => {}
         Err(_) => env::set_var("RUST_LOG", "debug"),
     }
     env_logger::init();
-
     let args = Cli::from_args();
+    let ret = match args.sub {
+        CliSubCommands::IftracerCli(sub_args) => run_iftracer_main(sub_args),
+    };
+    ret?;
+    Ok(())
+}
+
+fn run_iftracer_main(args: IftracerCli) -> Result<()> {
     info!("[parse trace file step]");
     let mut events = if args.text_flag {
         iftrace::parse_text_files(&args.input_files)?

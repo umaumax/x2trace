@@ -10,7 +10,7 @@ ltrace,straceなどのトレーサーの出力結果を`trace.json`形式に変�
 
 ## for [umaumax/iftracer]( https://github.com/umaumax/iftracer/tree/master/ )
 ``` bash
-cargo run iftracer.out.XXX --bin $BIN_FILEPATH
+cargo run iftracer iftracer.out.XXX --bin $BIN_FILEPATH
 ```
 
 ## how to use
