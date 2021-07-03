@@ -4,6 +4,7 @@ use std::env;
 use std::fs::File;
 use std::io::Write;
 
+use cpp_demangle::Symbol;
 use log::info;
 use structopt::StructOpt;
 
@@ -23,6 +24,8 @@ struct Cli {
     bit32: bool,
     #[structopt(long = "function-file-location")]
     function_file_location: bool,
+    #[structopt(long = "no-demangle")]
+    no_demangle: bool,
 }
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -61,7 +64,13 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         info!("{:?}", add2info_map);
         for mut event in &mut events {
             if let Some(info) = add2info_map.get(&event.name) {
-                event.name = info.function_name.to_string();
+                let mut name = info.function_name.to_string();
+                if !args.no_demangle {
+                    if let Ok(sym) = Symbol::new(&name) {
+                        name = sym.to_string();
+                    }
+                }
+                event.name = name;
                 if event.event_type == chrome::EventType::DurationEnd {
                     continue;
                 }
