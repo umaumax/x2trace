@@ -275,7 +275,9 @@ fn parse_binary_buffer(
                 let text = if event_type == chrome::EventType::DurationBegin {
                     let mut text = vec![0; text_size as usize];
                     cur.read_exact(&mut text).unwrap();
-                    let dummy_padding_size = (((text_size) + (8 - 1)) & !(8 - 1)) - text_size;
+                    let text_align = 4;
+                    let dummy_padding_size =
+                        (((text_size) + (text_align - 1)) & !(text_align - 1)) - text_size;
                     cur.seek(SeekFrom::Current(dummy_padding_size as i64))
                         .unwrap();
                     String::from_utf8(text).unwrap()
