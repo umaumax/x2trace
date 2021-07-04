@@ -25,6 +25,16 @@
     }
   },
   {
+    "name": "func1->other",
+    "cat": "flow,func",
+    "ph": "s",
+    "ts": 1001500,
+    "pid": 7083,
+    "tid": 123,
+    "id": 200,
+    "args": null
+  },
+  {
     "name": "func1-1",
     "cat": "main,func",
     "ph": "X",
@@ -57,7 +67,9 @@
     "dur": 1500,
     "pid": 7083,
     "tid": 123,
-    "args": null
+    "args": {
+      "obj": { "id_ref": "0x100" }
+    }
   },
   {
     "args": {
@@ -98,6 +110,16 @@
     "ts": 1004000
   },
   {
+    "name": "func1->other",
+    "cat": "flow,func",
+    "ph": "t",
+    "ts": 1003000,
+    "pid": 22630,
+    "tid": 22630,
+    "id": 200,
+    "args": null
+  },
+  {
     "args": {
       "name": "sub_process_name"
     },
@@ -107,6 +129,26 @@
     "pid": 22630,
     "tid": 0,
     "ts": 0
+  },
+  {
+    "name": "other->term",
+    "cat": "flow,func",
+    "ph": "s",
+    "ts": 1003000,
+    "pid": 22630,
+    "tid": 22630,
+    "id": 200,
+    "args": null
+  },
+  {
+    "name": "other->term",
+    "cat": "flow,func",
+    "ph": "t",
+    "ts": 1010500,
+    "pid": 7083,
+    "tid": 123,
+    "id": 200,
+    "args": null
   },
   {
     "args": {
@@ -120,23 +162,186 @@
     "ts": 0
   },
   {
-    "name": "func1->other",
-    "cat": "flow,func",
-    "ph": "s",
-    "ts": 1001500,
+    "name": "ctr",
+    "ph": "C",
+    "ts": 1010100,
     "pid": 7083,
     "tid": 123,
-    "id": 200,
-    "args": null
+    "id": 100,
+    "args": { "cats": 0, "dogs": 7 }
   },
   {
-    "name": "func1->other",
-    "cat": "flow,func",
-    "ph": "t",
-    "ts": 1003000,
-    "pid": 22630,
-    "tid": 22630,
-    "id": 200,
-    "args": null
+    "name": "ctr",
+    "ph": "C",
+    "ts": 1010200,
+    "pid": 7083,
+    "tid": 123,
+    "id": 100,
+    "args": { "cats": 10, "dogs": 4 }
+  },
+  {
+    "name": "ctr",
+    "ph": "C",
+    "ts": 1010300,
+    "pid": 7083,
+    "tid": 123,
+    "id": 100,
+    "args": { "cats": 0, "dogs": -10 }
+  },
+  {
+    "name": "ctr",
+    "ph": "C",
+    "ts": 1010400,
+    "pid": 7083,
+    "tid": 123,
+    "id": 100,
+    "args": { "cats": 0, "dogs": 0 }
+  },
+  {
+    "name": "ctr_hoge",
+    "ph": "C",
+    "ts": 1010300,
+    "pid": 7083,
+    "tid": 123,
+    "id": 100,
+    "args": { "hoge": 10 }
+  },
+  {
+    "name": "ctr_hoge",
+    "ph": "C",
+    "ts": 1010400,
+    "pid": 7083,
+    "tid": 123,
+    "id": 100,
+    "args": { "hoge": 0 }
+  },
+  {
+    "name": "OutOfMemoryAtThread",
+    "ph": "i",
+    "ts": 1010100,
+    "pid": 7083,
+    "tid": 123,
+    "s": "t"
+  },
+  {
+    "name": "OutOfMemoryAtProcess",
+    "ph": "i",
+    "ts": 1010300,
+    "pid": 7083,
+    "tid": 123,
+    "s": "p"
+  },
+  {
+    "name": "OutOfMemory",
+    "ph": "i",
+    "ts": 1010500,
+    "pid": 7083,
+    "tid": 123,
+    "s": "g"
+  },
+  {
+    "cat": "foo",
+    "name": "url_request",
+    "ph": "b",
+    "ts": "1010500",
+    "pid": 7083,
+    "tid": 123,
+    "id": 100
+  },
+  {
+    "cat": "foo",
+    "name": "url_headers",
+    "ph": "b",
+    "ts": "1011500",
+    "pid": 7083,
+    "tid": 123,
+    "id": 100
+  },
+  {
+    "cat": "foo",
+    "name": "http_cache",
+    "ph": "n",
+    "ts": "1013500",
+    "dur": 1000,
+    "pid": 7083,
+    "tid": 123,
+    "id": 100
+  },
+  {
+    "cat": "foo",
+    "name": "url_headers",
+    "ph": "e",
+    "ts": "1012500",
+    "pid": 7083,
+    "tid": 123,
+    "id": 100,
+    "args": {
+      "step": "headers_complete",
+      "response_code": 200
+    }
+  },
+  {
+    "cat": "foo",
+    "name": "url_request",
+    "ph": "e",
+    "ts": "1014500",
+    "pid": 7083,
+    "tid": 123,
+    "id": 100
+  },
+  {
+    "name": "Object",
+    "ph": "N",
+    "ts": "1014000",
+    "pid": 7083,
+    "tid": 123,
+    "id": "0x100"
+  },
+  {
+    "name": "Object",
+    "ph": "D",
+    "ts": "1015000",
+    "pid": 7083,
+    "tid": 123,
+    "id": "0x100"
+  },
+  {
+    "name": "Object",
+    "ph": "O",
+    "ts": "1014500",
+    "pid": 7083,
+    "tid": 123,
+    "id": "0x100",
+    "args": {
+      "snapshot": { "hoge": 123 }
+    }
+  },
+  {
+    "name": "Mark",
+    "cat": "hoge",
+    "ph": "R",
+    "ts": "1014500",
+    "pid": 7083,
+    "tid": 123,
+    "id": "0x100",
+    "args": {
+      "snapshot": { "hoge": 123 }
+    }
+  },
+  {
+    "name": "clock_sync",
+    "ph": "(",
+    "ts": 1014700,
+    "pid": 7083,
+    "tid": 123,
+    "id": "0x100"
+  },
+  {
+    "name": "clock_sync",
+    "ph": ")",
+    "ts": 1014800,
+    "pid": 7083,
+    "tid": 123,
+    "id": "0x100"
   }
 ]

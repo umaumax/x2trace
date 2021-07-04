@@ -24,49 +24,6 @@ open `chrome://tracing` and drop output file
 
 ----
 
-## trace.jsonの仕様
-[Trace Event Format \- Google Docs]( https://docs.google.com/document/d/1CvAClvFfyA5R-PhYUmn5OOQtYMH4h6I0nSsKchNAySU/preview# )
-
-`trace.json`は下記の2種類
-
-JSON Array Format
-```
-[...]
-```
-
-JSON Object Format
-```
-{
-	"traceEvents": [...],
-  ...
-}
-```
-
-JSON Object Formatの`traceEvents`がJSON Array Formatと一致することもあり，基本的にはJSON Array Formatで問題はないと思われる
-
-### Async Events
-* 特に，"n"の意味がわからない
-* idでまとめられるので，意味のある塊で見やすくする?
-* flow eventsとは異なり，threadはまたがない
-
-### Flow Events
-* 指定したPID1,TID1上の__存在する__sliceから指定したPID2,TID2上の__存在する__sliceへの経路である
-* s(start)とt(end)で同一のidを指定すること
-
-### Metadata Events
-設定したいメタデータごとに下記のjsonを作成する
-```
-{
- "name": "thread_name", "ph": "M", "pid": 2343, "tid": 2347,
- "args": {
-  "name" : "VALUE"
- }
-}
-```
-
-#### Instant Events
-細長い三角形であるポイントにおける何らかのイベントの情報を表示する
-
 ## ./x2trace.awk
 ### ltrace
 ```
