@@ -253,6 +253,9 @@ fn parse_binary_buffer(
             "parsed event stack size is {}, maybe broken file",
             event_stack.len()
         );
+        for event in event_stack {
+            events.push(event);
+        }
     }
     Ok(events)
 }
