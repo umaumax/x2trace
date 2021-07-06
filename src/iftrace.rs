@@ -29,34 +29,21 @@ pub fn parse_text_file(filename: &PathBuf) -> Result<Vec<chrome::Event>> {
     parse_text_buffer(buffer)
 }
 
-fn file_name_to_tid(filename: &str) -> Result<u32> {
-    let fields: Vec<&str> = filename.split('.').collect();
-    let tid = fields.last().unwrap().parse::<u32>().unwrap();
-    Ok(tid)
-}
-
 pub fn parse_binary_files(files: &Vec<PathBuf>, bit32_flag: bool) -> Result<Vec<chrome::Event>> {
     let mut events: Vec<chrome::Event> = Vec::new();
     if files.len() == 0 {
         return Ok(events);
     }
-    let pid = file_name_to_tid(files[0].to_str().unwrap()).unwrap();
     for file in files {
-        let tid = file_name_to_tid(file.to_str().unwrap()).unwrap();
-        let mut result = parse_binary_file(&file, bit32_flag, pid, tid)?;
+        let mut result = parse_binary_file(&file, bit32_flag)?;
         events.append(&mut result);
     }
     Ok(events)
 }
 
-fn parse_binary_file(
-    filename: &PathBuf,
-    bit32_flag: bool,
-    pid: u32,
-    tid: u32,
-) -> Result<Vec<chrome::Event>> {
+fn parse_binary_file(filename: &PathBuf, bit32_flag: bool) -> Result<Vec<chrome::Event>> {
     let buffer = get_file_as_byte_vec(filename)?;
-    parse_binary_buffer(buffer, bit32_flag, pid, tid)
+    parse_binary_buffer(buffer, bit32_flag)
 }
 
 fn get_file_as_byte_vec(filename: &PathBuf) -> Result<Vec<u8>> {
@@ -143,18 +130,16 @@ fn update_to_complete_event(event: &mut chrome::Event, end_timestamp: Duration) 
     event.event_type = chrome::EventType::Complete;
 }
 
-fn parse_binary_buffer(
-    buffer: Vec<u8>,
-    bit32_flag: bool,
-    pid: u32,
-    tid: u32,
-) -> Result<Vec<chrome::Event>> {
+fn parse_binary_buffer(buffer: Vec<u8>, bit32_flag: bool) -> Result<Vec<chrome::Event>> {
     let mut events: Vec<chrome::Event> = Vec::with_capacity(10);
     let mut cur = Cursor::new(buffer);
-
     let cur_len = cur.get_ref().len();
-    let mut pre_timestamp = Duration::new(0, 0);
     let mut event_stack = Vec::<chrome::Event>::new();
+
+    let base_timestamp = Duration::from_micros(cur.read_u64::<LittleEndian>().unwrap());
+    let mut pre_timestamp = base_timestamp;
+    let pid = cur.read_i32::<LittleEndian>().unwrap() as u32;
+    let tid = cur.read_i32::<LittleEndian>().unwrap() as u32;
     while (cur.position() as usize) < cur_len - 1 {
         let timestamp_with_extra_flag = cur.read_u32::<LittleEndian>().unwrap();
         if timestamp_with_extra_flag == 0 {
