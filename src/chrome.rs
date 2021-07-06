@@ -24,7 +24,7 @@ pub enum EventType {
     DurationEnd,
     #[serde(rename = "X")]
     Complete,
-    #[serde(rename = "I")]
+    #[serde(rename = "i")]
     Instant,
     #[serde(rename = "C")]
     Counter,
@@ -58,8 +58,10 @@ pub enum EventType {
     Mark,
     #[serde(rename = "c")]
     ClockSync,
-    #[serde(rename = ",")]
-    Context,
+    #[serde(rename = "(")]
+    ContextStart,
+    #[serde(rename = "(")]
+    ContextEnd,
 }
 impl Default for EventType {
     fn default() -> Self {
