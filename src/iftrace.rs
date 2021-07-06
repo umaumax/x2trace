@@ -90,6 +90,7 @@ fn parse_line_to_event(line: &str) -> Result<chrome::Event> {
         name: func_name,
         process_id: 1234,
         thread_id: tid,
+        scope: None,
         timestamp: timestamp,
     };
     Ok(event)
@@ -109,12 +110,32 @@ fn parse_text_buffer(buffer: Vec<u8>) -> Result<Vec<chrome::Event>> {
     Ok(events)
 }
 
-#[derive(FromPrimitive, ToPrimitive)]
+#[derive(PartialEq, FromPrimitive, ToPrimitive)]
 enum ExtraFlag {
     NormalEnter = 0x0,
-    InternalOrExternalEnter = 0x1,
-    InternalOrNormalExit = 0x2,
-    ExternalExit = 0x3,
+    ExtendEnter = 0x1,
+    NormalExit = 0x2,
+    ExtendExit = 0x3,
+}
+
+#[derive(PartialEq, FromPrimitive, ToPrimitive)]
+enum ExtendType {
+    DurationEnter = 0x0,
+    DurationExit = 0x1,
+    AsyncEnter = 0x2,
+    AsyncExit = 0x3,
+    Instant = 0x4,
+}
+impl From<ExtendType> for chrome::EventType {
+    fn from(extend_type: ExtendType) -> Self {
+        match extend_type {
+            ExtendType::DurationEnter => chrome::EventType::DurationBegin,
+            ExtendType::DurationExit => chrome::EventType::DurationEnd,
+            ExtendType::AsyncEnter => chrome::EventType::AsyncNestableStart,
+            ExtendType::AsyncExit => chrome::EventType::AsyncNestableEnd,
+            ExtendType::Instant => chrome::EventType::Instant,
+        }
+    }
 }
 
 fn update_to_complete_event(event: &mut chrome::Event, end_timestamp: Duration) {
@@ -172,23 +193,28 @@ fn parse_binary_buffer(buffer: Vec<u8>, bit32_flag: bool) -> Result<Vec<chrome::
                     name: String::from("0x") + &format!("{:x}", func_addr),
                     process_id: pid,
                     thread_id: tid,
+                    scope: None,
                     timestamp: timestamp,
                 }
             }
-            ExtraFlag::InternalOrExternalEnter => {
+            ExtraFlag::ExtendEnter => {
                 // debug!("internal or external enter, func_addr");
+                let extend_type: ExtendType =
+                    FromPrimitive::from_u32(cur.read_u32::<LittleEndian>().unwrap()).unwrap();
+                let event_type = chrome::EventType::from(extend_type);
                 chrome::Event {
                     args: None,
-                    category: String::from("internal or external"),
+                    category: String::from("extend"),
                     duration: Duration::from_millis(0),
-                    event_type: chrome::EventType::DurationBegin,
+                    event_type: event_type,
                     name: String::from(""),
                     process_id: pid,
                     thread_id: tid,
+                    scope: None,
                     timestamp: timestamp,
                 }
             }
-            ExtraFlag::InternalOrNormalExit => {
+            ExtraFlag::NormalExit => {
                 // debug!("internal or normal exit");
                 let mut event = event_stack.pop().unwrap();
                 update_to_complete_event(&mut event, timestamp);
@@ -198,8 +224,11 @@ fn parse_binary_buffer(buffer: Vec<u8>, bit32_flag: bool) -> Result<Vec<chrome::
                 }
                 event
             }
-            ExtraFlag::ExternalExit => {
+            ExtraFlag::ExtendExit => {
                 // debug!("external exit");
+                let extend_type: ExtendType =
+                    FromPrimitive::from_u32(cur.read_u32::<LittleEndian>().unwrap()).unwrap();
+                let event_type = chrome::EventType::from(extend_type);
 
                 let text_size = cur.read_u32::<LittleEndian>().unwrap();
                 let mut text_buf = vec![0; text_size as usize];
@@ -211,11 +240,30 @@ fn parse_binary_buffer(buffer: Vec<u8>, bit32_flag: bool) -> Result<Vec<chrome::
                     .unwrap();
                 let text = String::from_utf8(text_buf).unwrap();
 
-                let mut event = event_stack.pop().unwrap();
-                event.category = String::from("external");
-                event.name = text;
-                update_to_complete_event(&mut event, timestamp);
-                event
+                if event_type == chrome::EventType::DurationEnd {
+                    let mut event = event_stack.pop().unwrap();
+                    event.category = String::from("external");
+                    event.name = text;
+                    update_to_complete_event(&mut event, timestamp);
+                    event
+                } else {
+                    let scope = if event_type == chrome::EventType::Instant {
+                        Some(chrome::Scope::Thread)
+                    } else {
+                        None
+                    };
+                    chrome::Event {
+                        args: None,
+                        category: String::from("extend"),
+                        duration: Duration::from_millis(0),
+                        event_type: event_type,
+                        name: text,
+                        process_id: pid,
+                        thread_id: tid,
+                        scope: scope,
+                        timestamp: timestamp,
+                    }
+                }
             }
         };
         // if timestamp is same chrome tracing viewer doesn't show the item,
@@ -224,7 +272,10 @@ fn parse_binary_buffer(buffer: Vec<u8>, bit32_flag: bool) -> Result<Vec<chrome::
             chrome::EventType::DurationBegin => {
                 event_stack.push(event);
             }
-            chrome::EventType::Complete => {
+            chrome::EventType::AsyncNestableStart
+            | chrome::EventType::AsyncNestableEnd
+            | chrome::EventType::Instant
+            | chrome::EventType::Complete => {
                 events.push(event);
             }
             _ => {

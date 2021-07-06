@@ -67,6 +67,21 @@ impl Default for EventType {
     }
 }
 
+#[derive(Clone, Copy, Eq, PartialEq, Serialize, Debug)]
+pub enum Scope {
+    #[serde(rename = "g")]
+    Global,
+    #[serde(rename = "p")]
+    Process,
+    #[serde(rename = "t")]
+    Thread,
+}
+impl Default for Scope {
+    fn default() -> Self {
+        Scope::Global
+    }
+}
+
 #[derive(Serialize, Clone, Default, Debug)]
 pub struct Event {
     #[serde(rename = "name")]
@@ -76,7 +91,6 @@ pub struct Event {
     #[serde(rename = "ph")]
     pub event_type: EventType,
     #[serde(rename = "ts", serialize_with = "as_float_micros")]
-    #[serde()]
     pub timestamp: Duration,
     #[serde(rename = "dur", serialize_with = "as_float_micros")]
     pub duration: Duration,
@@ -84,6 +98,10 @@ pub struct Event {
     pub process_id: u32,
     #[serde(rename = "tid")]
     pub thread_id: u32,
+    #[serde(rename = "s")]
+    #[serde(skip_serializing_if = "std::option::Option::is_none")]
+    pub scope: Option<Scope>,
     #[serde(rename = "args")]
+    #[serde(skip_serializing_if = "std::option::Option::is_none")]
     pub args: Option<HashMap<String, String>>,
 }
