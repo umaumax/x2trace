@@ -261,7 +261,7 @@ fn parse_binary_buffer(buffer: Vec<u8>, bit32_flag: bool) -> Result<Vec<chrome::
                     event
                 } else {
                     let instant_scope = if event_type == chrome::EventType::Instant {
-                        Some(chrome::InstantScope::Thread)
+                        Some(chrome::InstantScope::Global)
                     } else {
                         None
                     };
