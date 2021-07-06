@@ -90,7 +90,9 @@ fn parse_line_to_event(line: &str) -> Result<chrome::Event> {
         name: func_name,
         process_id: 1234,
         thread_id: tid,
+        instant_scope: None,
         scope: None,
+        id: None,
         timestamp: timestamp,
     };
     Ok(event)
@@ -151,6 +153,17 @@ fn update_to_complete_event(event: &mut chrome::Event, end_timestamp: Duration) 
     event.event_type = chrome::EventType::Complete;
 }
 
+fn read_text_form_binary(cur: &mut std::io::Cursor<Vec<u8>>) -> String {
+    let text_size = cur.read_u32::<LittleEndian>().unwrap();
+    let mut text_buf = vec![0; text_size as usize];
+    cur.read_exact(&mut text_buf).unwrap();
+    let text_align = 4;
+    let dummy_padding_size = (((text_size) + (text_align - 1)) & !(text_align - 1)) - text_size;
+    cur.seek(SeekFrom::Current(dummy_padding_size as i64))
+        .unwrap();
+    String::from_utf8(text_buf).unwrap()
+}
+
 fn parse_binary_buffer(buffer: Vec<u8>, bit32_flag: bool) -> Result<Vec<chrome::Event>> {
     let mut events: Vec<chrome::Event> = Vec::with_capacity(10);
     let mut cur = Cursor::new(buffer);
@@ -193,7 +206,9 @@ fn parse_binary_buffer(buffer: Vec<u8>, bit32_flag: bool) -> Result<Vec<chrome::
                     name: String::from("0x") + &format!("{:x}", func_addr),
                     process_id: pid,
                     thread_id: tid,
+                    instant_scope: None,
                     scope: None,
+                    id: None,
                     timestamp: timestamp,
                 }
             }
@@ -202,7 +217,7 @@ fn parse_binary_buffer(buffer: Vec<u8>, bit32_flag: bool) -> Result<Vec<chrome::
                 let extend_type: ExtendType =
                     FromPrimitive::from_u32(cur.read_u32::<LittleEndian>().unwrap()).unwrap();
                 let event_type = chrome::EventType::from(extend_type);
-                chrome::Event {
+                let mut event = chrome::Event {
                     args: None,
                     category: String::from("extend"),
                     duration: Duration::from_millis(0),
@@ -210,9 +225,17 @@ fn parse_binary_buffer(buffer: Vec<u8>, bit32_flag: bool) -> Result<Vec<chrome::
                     name: String::from(""),
                     process_id: pid,
                     thread_id: tid,
+                    instant_scope: None,
                     scope: None,
+                    id: None,
                     timestamp: timestamp,
+                };
+                if event_type == chrome::EventType::AsyncNestableStart {
+                    event.name = read_text_form_binary(&mut cur);
+                    event.id = Some(event.name.clone());
+                    event.scope = Some(tid.to_string());
                 }
+                event
             }
             ExtraFlag::NormalExit => {
                 // debug!("internal or normal exit");
@@ -229,17 +252,7 @@ fn parse_binary_buffer(buffer: Vec<u8>, bit32_flag: bool) -> Result<Vec<chrome::
                 let extend_type: ExtendType =
                     FromPrimitive::from_u32(cur.read_u32::<LittleEndian>().unwrap()).unwrap();
                 let event_type = chrome::EventType::from(extend_type);
-
-                let text_size = cur.read_u32::<LittleEndian>().unwrap();
-                let mut text_buf = vec![0; text_size as usize];
-                cur.read_exact(&mut text_buf).unwrap();
-                let text_align = 4;
-                let dummy_padding_size =
-                    (((text_size) + (text_align - 1)) & !(text_align - 1)) - text_size;
-                cur.seek(SeekFrom::Current(dummy_padding_size as i64))
-                    .unwrap();
-                let text = String::from_utf8(text_buf).unwrap();
-
+                let text = read_text_form_binary(&mut cur);
                 if event_type == chrome::EventType::DurationEnd {
                     let mut event = event_stack.pop().unwrap();
                     event.category = String::from("external");
@@ -247,8 +260,18 @@ fn parse_binary_buffer(buffer: Vec<u8>, bit32_flag: bool) -> Result<Vec<chrome::
                     update_to_complete_event(&mut event, timestamp);
                     event
                 } else {
-                    let scope = if event_type == chrome::EventType::Instant {
-                        Some(chrome::Scope::Thread)
+                    let instant_scope = if event_type == chrome::EventType::Instant {
+                        Some(chrome::InstantScope::Thread)
+                    } else {
+                        None
+                    };
+                    let id = if event_type == chrome::EventType::AsyncNestableEnd {
+                        Some(text.clone())
+                    } else {
+                        None
+                    };
+                    let scope = if event_type == chrome::EventType::AsyncNestableEnd {
+                        Some(tid.to_string())
                     } else {
                         None
                     };
@@ -260,7 +283,9 @@ fn parse_binary_buffer(buffer: Vec<u8>, bit32_flag: bool) -> Result<Vec<chrome::
                         name: text,
                         process_id: pid,
                         thread_id: tid,
+                        instant_scope: instant_scope,
                         scope: scope,
+                        id: id,
                         timestamp: timestamp,
                     }
                 }

@@ -70,7 +70,7 @@ impl Default for EventType {
 }
 
 #[derive(Clone, Copy, Eq, PartialEq, Serialize, Debug)]
-pub enum Scope {
+pub enum InstantScope {
     #[serde(rename = "g")]
     Global,
     #[serde(rename = "p")]
@@ -78,9 +78,9 @@ pub enum Scope {
     #[serde(rename = "t")]
     Thread,
 }
-impl Default for Scope {
+impl Default for InstantScope {
     fn default() -> Self {
-        Scope::Global
+        InstantScope::Global
     }
 }
 
@@ -102,7 +102,13 @@ pub struct Event {
     pub thread_id: u32,
     #[serde(rename = "s")]
     #[serde(skip_serializing_if = "std::option::Option::is_none")]
-    pub scope: Option<Scope>,
+    pub instant_scope: Option<InstantScope>,
+    #[serde(rename = "scope")]
+    #[serde(skip_serializing_if = "std::option::Option::is_none")]
+    pub scope: Option<String>,
+    #[serde(rename = "id")]
+    #[serde(skip_serializing_if = "std::option::Option::is_none")]
+    pub id: Option<String>,
     #[serde(rename = "args")]
     #[serde(skip_serializing_if = "std::option::Option::is_none")]
     pub args: Option<HashMap<String, String>>,
