@@ -41,6 +41,12 @@ struct IftracerCli {
 #[derive(StructOpt)]
 #[structopt(setting(clap::AppSettings::ColoredHelp))]
 struct Cli {
+    #[structopt(
+        short = "p",
+        long = "pretty",
+        help = "Output tracing json file pretty or not"
+    )]
+    pretty: bool,
     #[structopt(subcommand)]
     pub sub: CliSubCommands,
 }
@@ -59,19 +65,19 @@ fn main() -> Result<()> {
     }
     env_logger::init();
     let args = Cli::from_args();
-    let ret = match args.sub {
-        CliSubCommands::IftracerCli(sub_args) => run_iftracer_main(sub_args),
+    let ret = match &args.sub {
+        CliSubCommands::IftracerCli(sub_args) => run_iftracer_main(&args, &sub_args),
     };
     ret?;
     Ok(())
 }
 
-fn run_iftracer_main(args: IftracerCli) -> Result<()> {
+fn run_iftracer_main(args: &Cli, sub_args: &IftracerCli) -> Result<()> {
     info!("[parse trace file step]");
-    let mut events = if args.text_flag {
-        iftrace::parse_text_files(&args.input_files)?
+    let mut events = if sub_args.text_flag {
+        iftrace::parse_text_files(&sub_args.input_files)?
     } else {
-        iftrace::parse_binary_files(&args.input_files, args.bit32)?
+        iftrace::parse_binary_files(&sub_args.input_files, sub_args.bit32)?
     };
 
     let mut address_hash = HashSet::new();
@@ -84,19 +90,19 @@ fn run_iftracer_main(args: IftracerCli) -> Result<()> {
     let address_list = address_hash.into_iter().collect::<Vec<_>>();
 
     // rename address to function name by objdump
-    if !args.bin_filepath.as_path().to_str().unwrap().is_empty() {
+    if !sub_args.bin_filepath.as_path().to_str().unwrap().is_empty() {
         info!("[objdump step]");
         let objdump_command = match env::var("OBJDUMP") {
             Ok(val) => val,
             Err(_) => "objdump".to_string(),
         };
         let add2info_map =
-            objdump::get_addr2info_map(&objdump_command, &args.bin_filepath, &address_list)?;
+            objdump::get_addr2info_map(&objdump_command, &sub_args.bin_filepath, &address_list)?;
         info!("{:?}", add2info_map);
         for mut event in &mut events {
             if let Some(info) = add2info_map.get(&event.name) {
                 let mut name = info.function_name.to_string();
-                if !args.no_demangle {
+                if !sub_args.no_demangle {
                     if let Ok(sym) = Symbol::new(&name) {
                         name = sym.to_string();
                     }
@@ -105,7 +111,7 @@ fn run_iftracer_main(args: IftracerCli) -> Result<()> {
                 if event.event_type == chrome::EventType::DurationEnd {
                     continue;
                 }
-                if args.function_file_location && !info.file_location.is_empty() {
+                if sub_args.function_file_location && !info.file_location.is_empty() {
                     let event_args = event.args.get_or_insert(HashMap::new());
                     event_args.insert(
                         String::from("file_location"),
@@ -117,7 +123,11 @@ fn run_iftracer_main(args: IftracerCli) -> Result<()> {
     }
 
     info!("[json parse step]");
-    let events_json = serde_json::to_string_pretty(&events)?;
+    let events_json = if args.pretty {
+        serde_json::to_string_pretty(&events)?
+    } else {
+        serde_json::to_string(&events)?
+    };
     // info!("{}", events_json);
 
     info!("[json output step]");
