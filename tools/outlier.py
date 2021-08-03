@@ -63,6 +63,8 @@ def main():
         elif ph == 'X':
             duration = v['dur']
             func_map[name]['durations'].append(duration / 1000.0)
+        elif ph in ['b', 'i', 'e']:
+            pass
         else:
             print("invalid ph:{}".format(ph), file=sys.stderr)
             return 1

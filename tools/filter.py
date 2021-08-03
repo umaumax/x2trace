@@ -61,6 +61,8 @@ def main():
             end_ts = ts + duration
             func_map[name]['list'].append(
                 (index, -1, begin_ts, end_ts))
+        elif ph in ['b', 'i', 'e']:
+            pass
         else:
             print("invalid ph:{}".format(ph), file=sys.stderr)
             return 1
