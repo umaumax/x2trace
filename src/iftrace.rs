@@ -58,7 +58,7 @@ fn parse_line_to_event(line: &str) -> Result<chrome::Event> {
     let fields: Vec<&str> = line.split_whitespace().collect();
     if fields.len() != 5 {
         return Err(anyhow!(
-            "Failed parse line '{}' required format! is 'tid timestamp(us) action[enter/exit] caller_addressv callee_adderss' e.g. '239949354 1624633549138701 enter 0x1002d47e8 0x100166be0'",
+            "Failed parse line '{}' required format! is 'tid timestamp(us) action[enter/exit] caller_address callee_address' e.g. '239949354 1624633549138701 enter 0x1002d47e8 0x100166be0'",
             line
         ));
     }

@@ -8,7 +8,7 @@ use std::process::Stdio;
 use anyhow::{anyhow, Result};
 
 #[derive(Debug)]
-pub struct AddressInfomation {
+pub struct AddressInformation {
     pub address: String,
     pub file_location: String,
     pub function_name: String,
@@ -18,7 +18,7 @@ pub fn get_addr2info_map(
     objdump_command: &str,
     filepath: &PathBuf,
     address_list: &Vec<&String>,
-) -> Result<HashMap<String, AddressInfomation>> {
+) -> Result<HashMap<String, AddressInformation>> {
     let child = Command::new(objdump_command)
         .arg("--disassemble")
         .arg("--prefix-addresses")
@@ -39,7 +39,7 @@ pub fn get_addr2info_map(
             stderr_output
         ));
     }
-    let mut addr2info_map: HashMap<String, AddressInfomation> = HashMap::new();
+    let mut addr2info_map: HashMap<String, AddressInformation> = HashMap::new();
 
     let mut address_list_clone = address_list.clone();
     address_list_clone.sort();
@@ -59,14 +59,14 @@ pub fn get_addr2info_map(
     // }
     let mut address_list_index = 0;
     let address_list_length = address_list_sorted.len();
-    // TODO: get infomation of file line
+    // TODO: get information of file line
     let mut cur = Cursor::new(output.stdout);
     let mut line = String::new();
 
     let mut addr_file_location = String::new();
     while cur.read_line(&mut line).unwrap() > 0 && address_list_index < address_list_length {
         if line.starts_with("/") {
-            // filepath infomation
+            // filepath information
             addr_file_location = line.trim_end().to_string();
         }
         // debug!("objdump output line: {:?}", line);
@@ -86,12 +86,12 @@ pub fn get_addr2info_map(
             if address == target_address {
                 // found target address
                 let hex_address = String::from("0x") + &target_address;
-                let address_infomation = AddressInfomation {
+                let address_information = AddressInformation {
                     address: hex_address.clone(),
                     file_location: addr_file_location.clone(),
                     function_name: String::from(func_name),
                 };
-                addr2info_map.insert(hex_address, address_infomation);
+                addr2info_map.insert(hex_address, address_information);
                 // debug!("objdump hit address: {:?}", line);
                 address_list_index += 1;
                 break;
