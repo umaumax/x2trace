@@ -86,14 +86,14 @@ fn parse_line_to_event(line: &str) -> Result<chrome::Event> {
         args: None,
         category: String::from("category"),
         duration: Duration::from_millis(0),
-        event_type: event_type,
+        event_type,
         name: func_name,
         process_id: 1234,
         thread_id: tid,
         instant_scope: None,
         scope: None,
         id: None,
-        timestamp: timestamp,
+        timestamp,
     };
     Ok(event)
 }
@@ -209,7 +209,7 @@ fn parse_binary_buffer(buffer: Vec<u8>, bit32_flag: bool) -> Result<Vec<chrome::
                     instant_scope: None,
                     scope: None,
                     id: None,
-                    timestamp: timestamp,
+                    timestamp,
                 }
             }
             ExtraFlag::ExtendEnter => {
@@ -221,14 +221,14 @@ fn parse_binary_buffer(buffer: Vec<u8>, bit32_flag: bool) -> Result<Vec<chrome::
                     args: None,
                     category: String::from("extend"),
                     duration: Duration::from_millis(0),
-                    event_type: event_type,
+                    event_type,
                     name: String::from(""),
                     process_id: pid,
                     thread_id: tid,
                     instant_scope: None,
                     scope: None,
                     id: None,
-                    timestamp: timestamp,
+                    timestamp,
                 };
                 if event_type == chrome::EventType::AsyncNestableStart {
                     event.name = read_text_form_binary(&mut cur);
@@ -279,14 +279,14 @@ fn parse_binary_buffer(buffer: Vec<u8>, bit32_flag: bool) -> Result<Vec<chrome::
                         args: None,
                         category: String::from("extend"),
                         duration: Duration::from_millis(0),
-                        event_type: event_type,
+                        event_type,
                         name: text,
                         process_id: pid,
                         thread_id: tid,
-                        instant_scope: instant_scope,
+                        instant_scope,
                         scope: scope,
                         id: id,
-                        timestamp: timestamp,
+                        timestamp,
                     }
                 }
             }
