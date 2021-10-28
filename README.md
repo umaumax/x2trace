@@ -13,6 +13,11 @@ ltrace,straceなどのトレーサーの出力結果を`trace.json`形式に変�
 cargo run iftracer iftracer.out.XXX --bin $BIN_FILEPATH
 ```
 
+ASLR(address space layout randomization)を無効化して、iftracerの実行ファイルの実行方法
+``` bash
+setarch $(uname -m) -R ./a.out
+```
+
 ## how to use
 open `chrome://tracing` and drop output file
 
