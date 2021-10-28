@@ -3,13 +3,15 @@ use std::collections::HashSet;
 use std::env;
 use std::fs::File;
 use std::io::Write;
+use std::path::Path;
 
-use anyhow::Result;
+use anyhow::{anyhow, Result};
 use cpp_demangle::Symbol;
 use log::info;
 use structopt::StructOpt;
 
 use x2trace::chrome;
+use x2trace::file;
 use x2trace::iftrace;
 use x2trace::objdump;
 
@@ -27,8 +29,12 @@ struct IftracerCli {
     bin_filepath: std::path::PathBuf,
     #[structopt(long = "text", help = "Deprecated option")]
     text_flag: bool,
-    #[structopt(long = "bit32", help = "Target arch is 32bit or not")]
-    bit32: bool,
+    #[structopt(
+        long = "bit",
+        default_value("auto"),
+        help = "Target arch is 32bit or not"
+    )]
+    bit: String,
     #[structopt(
         long = "function-file-location",
         help = "Disable add function file location to output args field"
@@ -72,12 +78,35 @@ fn main() -> Result<()> {
     Ok(())
 }
 
+fn parse_elf_bit_option(opt: &str, target_bin_file: &Path) -> Result<bool> {
+    match opt {
+        "32" => Ok(true),
+        "64" => Ok(false),
+        "auto" => {
+            let elf_bit_size = file::detect_elf_bit_size(target_bin_file);
+            match elf_bit_size {
+                Ok(file::ElfBitSize::Bit32) => Ok(true),
+                Ok(file::ElfBitSize::Bit64) => Ok(false),
+                Err(e) => return Err(e),
+            }
+        }
+        s => {
+            return Err(anyhow!(
+                "Failed parse --bit flag '{}' choose from [32, 64, auto]",
+                s
+            ))
+        }
+    }
+}
+
 fn run_iftracer_main(args: &Cli, sub_args: &IftracerCli) -> Result<()> {
     info!("[parse trace file step]");
     let mut events = if sub_args.text_flag {
         iftrace::parse_text_files(&sub_args.input_files)?
     } else {
-        iftrace::parse_binary_files(&sub_args.input_files, sub_args.bit32)?
+        let bit32flag =
+            parse_elf_bit_option(sub_args.bit.as_str(), sub_args.bin_filepath.as_path())?;
+        iftrace::parse_binary_files(&sub_args.input_files, bit32flag)?
     };
 
     let mut address_hash = HashSet::new();

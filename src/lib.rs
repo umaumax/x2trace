@@ -1,4 +1,5 @@
 pub mod chrome;
+pub mod file;
 pub mod iftrace;
 pub mod objdump;
 
