@@ -11,6 +11,9 @@ ltrace,straceなどのトレーサーの出力結果を`trace.json`形式に変�
 ## for [umaumax/iftracer]( https://github.com/umaumax/iftracer/tree/master/ )
 ``` bash
 cargo run iftracer iftracer.out.XXX --bin $BIN_FILEPATH
+
+# for another arch
+OBJDUMP=/usr/bin/arm-linux-gnueabihf-objdump cargo run iftracer iftracer.out.XXX --bin $BIN_FILEPATH
 ```
 
 ASLR(address space layout randomization)を無効化して、iftracerの実行ファイルの実行方法
