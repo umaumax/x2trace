@@ -34,7 +34,7 @@ pub fn get_addr2info_map(
     if exit_code != 0 {
         let stderr_output = String::from_utf8(output.stderr).unwrap();
         return Err(anyhow!(
-            "Failed to run objdump command: exit_code={}, stderr={}",
+            "Failed to run objdump command: exit_code={}, stderr={}\n(Please set a correct architecture objdump command by 'OBJDUMP' environment variable.)",
             exit_code,
             stderr_output
         ));
