@@ -16,7 +16,6 @@ use x2trace::iftrace;
 use x2trace::objdump;
 
 #[derive(StructOpt)]
-#[structopt(setting(clap::AppSettings::ColoredHelp))]
 struct IftracerCli {
     #[structopt(parse(from_os_str), help = "Target trace log files")]
     input_files: Vec<std::path::PathBuf>,
@@ -45,7 +44,6 @@ struct IftracerCli {
 }
 
 #[derive(StructOpt)]
-#[structopt(setting(clap::AppSettings::ColoredHelp))]
 struct Cli {
     #[structopt(
         short = "p",
@@ -60,7 +58,6 @@ struct Cli {
 #[derive(StructOpt)]
 enum CliSubCommands {
     #[structopt(name = "iftracer", about = "Select iftracer")]
-    #[structopt(setting(clap::AppSettings::ColoredHelp))]
     IftracerCli(IftracerCli),
 }
 
