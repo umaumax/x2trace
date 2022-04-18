@@ -6,7 +6,7 @@ ltrace,straceなどのトレーサーの出力結果を`trace.json`形式に変�
 
 * [x] `ltrace`: by awk tool
 * [x] `strace`: by awk tool
-* [x] `iftraer`: by rust tool
+* [x] `iftracer`: by rust tool
 
 ## for [umaumax/iftracer]( https://github.com/umaumax/iftracer/tree/master/ )
 ``` bash
