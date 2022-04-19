@@ -26,6 +26,12 @@ struct IftracerCli {
         help = "Target binary filepath"
     )]
     bin_filepath: std::path::PathBuf,
+    #[structopt(
+        long = "base_address",
+        default_value("0x0"),
+        help = "head address at runtime (for using --bin as shared library)"
+    )]
+    base_address: String,
     #[structopt(long = "text", help = "Deprecated option")]
     text_flag: bool,
     #[structopt(
@@ -122,8 +128,12 @@ fn run_iftracer_main(args: &Cli, sub_args: &IftracerCli) -> Result<()> {
             Ok(val) => val,
             Err(_) => "objdump".to_string(),
         };
-        let add2info_map =
-            objdump::get_addr2info_map(&objdump_command, &sub_args.bin_filepath, &address_list)?;
+        let add2info_map = objdump::get_addr2info_map(
+            &objdump_command,
+            &sub_args.bin_filepath,
+            &sub_args.base_address,
+            &address_list,
+        )?;
         info!("{:?}", add2info_map);
         for mut event in &mut events {
             if let Some(info) = add2info_map.get(&event.name) {
