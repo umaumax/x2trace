@@ -14,6 +14,7 @@ use x2trace::chrome;
 use x2trace::file;
 use x2trace::iftrace;
 use x2trace::objdump;
+use x2trace::proc_maps;
 
 #[derive(StructOpt)]
 struct IftracerCli {
@@ -27,9 +28,16 @@ struct IftracerCli {
     )]
     bin_filepath: std::path::PathBuf,
     #[structopt(
-        long = "base_address",
+        long = "proc-maps",
+        parse(from_os_str),
+        default_value(""),
+        help = "Target /proc/$PID/maps dump filepath (for resolve runtime address)"
+    )]
+    proc_maps_filepath: std::path::PathBuf,
+    #[structopt(
+        long = "base-address",
         default_value("0x0"),
-        help = "head address at runtime (for using --bin as shared library)"
+        help = "head address at runtime (for using --bin as shared library) (for resolve runtime address)"
     )]
     base_address: String,
     #[structopt(long = "text", help = "Deprecated option")]
@@ -121,6 +129,18 @@ fn run_iftracer_main(args: &Cli, sub_args: &IftracerCli) -> Result<()> {
     }
     let address_list = address_hash.into_iter().collect::<Vec<_>>();
 
+    let filename2addr_map = if !sub_args
+        .proc_maps_filepath
+        .as_path()
+        .to_str()
+        .unwrap()
+        .is_empty()
+    {
+        proc_maps::parse_proc_maps(&sub_args.proc_maps_filepath)?
+    } else {
+        HashMap::new()
+    };
+
     // rename address to function name by objdump
     if !sub_args.bin_filepath.as_path().to_str().unwrap().is_empty() {
         info!("[objdump step]");
@@ -128,13 +148,28 @@ fn run_iftracer_main(args: &Cli, sub_args: &IftracerCli) -> Result<()> {
             Ok(val) => val,
             Err(_) => "objdump".to_string(),
         };
+        let base_address = if let Some(base_address) = filename2addr_map.get(
+            &sub_args
+                .bin_filepath
+                .file_name()
+                .unwrap()
+                .to_string_lossy()
+                .to_string(),
+        ) {
+            base_address.clone()
+        } else {
+            u64::from_str_radix(sub_args.base_address.trim_start_matches("0x"), 16)?
+        };
+
         let add2info_map = objdump::get_addr2info_map(
             &objdump_command,
             &sub_args.bin_filepath,
-            &sub_args.base_address,
+            base_address,
             &address_list,
         )?;
-        info!("{:?}", add2info_map);
+        for resolved_function in &add2info_map {
+            info!("{:?}", resolved_function.1);
+        }
         for mut event in &mut events {
             if let Some(info) = add2info_map.get(&event.name) {
                 let mut name = info.function_name.to_string();

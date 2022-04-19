@@ -17,11 +17,9 @@ pub struct AddressInformation {
 pub fn get_addr2info_map(
     objdump_command: &str,
     filepath: &PathBuf,
-    base_address_str: &str,
+    base_address: u64,
     address_list: &Vec<&String>,
 ) -> Result<HashMap<String, AddressInformation>> {
-    let base_address = i64::from_str_radix(base_address_str.trim_start_matches("0x"), 16)?;
-
     let child = Command::new(objdump_command)
         .arg("--disassemble")
         .arg("--prefix-addresses")
@@ -83,7 +81,7 @@ pub fn get_addr2info_map(
             return Err(anyhow!("Failed parse line '{}'", line));
         }
         let address = fields[0].trim_start_matches(|c| c == '0' || c == ' ');
-        let runtime_address = base_address + i64::from_str_radix(address, 16)?;
+        let runtime_address = base_address + u64::from_str_radix(address, 16)?;
         let address = &format!("{:x}", runtime_address);
         let func_name = fields[1].trim_matches(|c| c == '<' || c == '>');
         while address_list_index < address_list_length {

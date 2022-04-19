@@ -21,6 +21,21 @@ ASLR(address space layout randomization)を無効化して、iftracerの実行�
 setarch $(uname -m) -R ./a.out
 ```
 
+`/proc/$PID/maps`
+``` log
+00400000-004c1000 r-xp 00000000 08:02 9044616                            /home/user/hoge_command
+006c0000-006c1000 r--p 000c0000 08:02 9044616                            /home/user/hoge_command
+006c1000-006c8000 rw-p 000c1000 08:02 9044616                            /home/user/hoge_command
+006c8000-006db000 rw-p 00000000 00:00 0 
+00f18000-01eb1000 rw-p 00000000 00:00 0                                  [heap]
+7f27cf08a000-7f27cf24a000 r-xp 00000000 08:02 42507243                   /home/user/libhoge.so
+7f27cf24a000-7f27cf44a000 ---p 001c0000 08:02 42507243                   /home/user/libhoge.so
+7f27cf44a000-7f27cf44e000 r--p 001c0000 08:02 42507243                   /home/user/libhoge.so
+7f27cf44e000-7f27cf450000 rw-p 001c4000 08:02 42507243                   /home/user/libhoge.so
+```
+
+`--bin`に`libhoge.so`を指定するときには、`--proc-maps=/pro/$PID/maps`か`--base-address=7f27cf08a000`とすることで実行時にアドレスが決定される共有ライブラリの名前解決ができる
+
 ## how to use
 open `chrome://tracing` and drop output file
 
