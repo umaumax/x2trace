@@ -175,16 +175,15 @@ fn parse_binary_buffer(buffer: Vec<u8>, bit32_flag: bool) -> Result<Vec<chrome::
     let pid = cur.read_i32::<LittleEndian>().unwrap() as u32;
     let tid = cur.read_i32::<LittleEndian>().unwrap() as u32;
     while (cur.position() as usize) < cur_len - 1 {
-        let timestamp_with_extra_flag = cur.read_u32::<LittleEndian>().unwrap();
+        let mut timestamp_with_extra_flag = cur.read_u32::<LittleEndian>().unwrap();
         if timestamp_with_extra_flag == 0 {
             log::warn!("get zero timestamp, maybe broken file");
             break;
         }
         // sub offset which used to distinguish broken file or not
         let dummy_offset = 1;
-        let extra_flag =
-            FromPrimitive::from_u32((timestamp_with_extra_flag - dummy_offset) >> (32 - 2))
-                .unwrap();
+        timestamp_with_extra_flag -= dummy_offset;
+        let extra_flag = FromPrimitive::from_u32(timestamp_with_extra_flag >> (32 - 2)).unwrap();
         let mut timestamp =
             Duration::from_micros((timestamp_with_extra_flag & !((0x3) << (32 - 2))) as u64);
 
