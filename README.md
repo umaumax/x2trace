@@ -36,6 +36,12 @@ setarch $(uname -m) -R ./a.out
 
 `--bin`に`libhoge.so`を指定するときには、`--proc-maps=/pro/$PID/maps`か`--base-address=7f27cf08a000`とすることで実行時にアドレスが決定される共有ライブラリの名前解決ができる
 
+## トレース結果の検証/加工ツール
+[x2trace/tools]( https://github.com/umaumax/x2trace/tree/master/tools )
+
+* 外れ値検出
+* フィルタリングツール
+
 ## how to use
 open `chrome://tracing` and drop output file
 
