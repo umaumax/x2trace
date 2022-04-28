@@ -78,6 +78,21 @@ seq 1 10 | strace -ttt -T -f -q -o strace-ttt-T-f-q-o.xargs.log xargs -L1 -I{} -
 cat strace-ttt-T-f-q-o.xargs.log | ./x2trace.awk > xargs.json
 ```
 
+## perf-sched-timehist.py
+``` bash
+sudo perf sched record sleep 1
+
+sudo perf sched timehist > timehist.log
+
+# overwrite CLOCK_MONOTONIC timestamp to CLOCK_REALTIME timestamp
+# e.g. 1646610039.304117326
+sudo perf sched timehist | perl -pe 'BEGIN{$offset=shift} s/^ *([0-9]+.[0-9]+)/$1+$offset/e' $TIMESTAMP_OFFSET
+```
+
+* how to get realtime - monotonic time offset
+  * c++: [get timestamp offset(realtime - monotonic)]( https://gist.github.com/umaumax/587238da2b1adad9c85f600076b7280e )
+  * rust: [umaumax/tsd-rs]( https://github.com/umaumax/tsd-rs )
+
 ## trace.json view tool
 自動的にファイルを読み込むことのできるちょうどよい方法がない(URLに読み込み先を指定して簡単にreloadなどができると理想)
 
