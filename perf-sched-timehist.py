@@ -68,21 +68,27 @@ def main():
                     pid = int(ret.group("pid"))
                     tid = int(ret.group("tid"))
 
-            duration = run_time
-
             pid = 'CPU'
             cpu = 'CPU:' + str(cpu)
+
+            duration = run_time
+
+            # only show long sch_delay slice(unit is us)
+            if sch_delay > 10:
+                sch_delay_timestamp = timestamp - duration - sch_delay
+                # slice
+                trace_list += [{
+                    "name": "sch_delay:{}({})".format(command, tid),
+                    "cat": "{}".format(command),
+                    "ph": 'X',
+                    "ts": sch_delay_timestamp,
+                    "dur": sch_delay,
+                    "pid": pid,
+                    "tid": cpu,
+                    "args": {}
+                }]
+                print("long sch_delay duration at: {}({}) {}us".format(command, tid, sch_delay), file=sys.stderr)
             # slice
-            trace_list += [{
-                "name": "sch_delay:{}({})".format(command, tid),
-                "cat": "{}".format(command),
-                "ph": 'X',
-                "ts": timestamp - duration - sch_delay,
-                "dur": sch_delay,
-                "pid": pid,
-                "tid": cpu,
-                "args": {}
-            }]
             trace_list += [{
                 "name": "{}({})".format(command, tid),
                 "cat": "{}".format(command),
