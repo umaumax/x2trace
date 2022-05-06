@@ -95,6 +95,9 @@ sudo perf sched timehist | perl -pe 'BEGIN{$offset=shift} s/^ *([0-9]+.[0-9]+)/$
   * c++: [get timestamp offset(realtime - monotonic)]( https://gist.github.com/umaumax/587238da2b1adad9c85f600076b7280e )
   * rust: [umaumax/tsd-rs]( https://github.com/umaumax/tsd-rs )
 
+### NOTE
+* CPU名を明示的にするとsliceのデータの発生順の表示となる
+
 ## trace.json view tool
 自動的にファイルを読み込むことのできるちょうどよい方法がない(URLに読み込み先を指定して簡単にreloadなどができると理想)
 
