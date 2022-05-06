@@ -61,7 +61,7 @@ def main():
                 pid = int(ret.group("pid"))
                 tid = int(ret.group("tid"))
             else:
-                ret = re.search(r'(?P<command>[^[]+)\[(?P<pid>[0-9]+)/(?P<tid>[0-9]+)\]',
+                ret = re.search(r'(?P<command>[^[]+)\[(?P<tid>[0-9]+)/(?P<pid>[0-9]+)\]',
                                 task_name)
                 if ret is not None:
                     command = ret.group("command")
