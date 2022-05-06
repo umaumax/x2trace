@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 
-import json
 import argparse
+import json
 import re
+import sys
 
 
 def remove_prefix(text, prefix):
@@ -36,6 +37,10 @@ def main():
             # skip header lines
             if cols[0] == 'time' or cols[0] == '[tid/pid]' or re.search(
                     '^-+$', cols[0]):
+                continue
+            # e.g. 1001.610442 lost 78106 events on cpu 0
+            if cols[1] == 'lost':
+                print("skip broken line: {}".format(line.rstrip()), file=sys.stderr)
                 continue
 
             timestamp = float(cols[0]) * 1000.0 * 1000.0  # sec to us
