@@ -86,7 +86,9 @@ sudo perf sched timehist > timehist.log
 
 # overwrite CLOCK_MONOTONIC timestamp to CLOCK_REALTIME timestamp
 # e.g. 1646610039.304117326
-sudo perf sched timehist | perl -pe 'BEGIN{$offset=shift} s/^ *([0-9]+.[0-9]+)/$1+$offset/e' $TIMESTAMP_OFFSET
+sudo perf sched timehist | perl -pe 'BEGIN{$offset=shift} s/^ *([0-9]+.[0-9]+)/$1+$offset/e' $TIMESTAMP_OFFSET > timehist.log
+
+./perf-sched-timehist.py timehist.log > timehist-trace.log
 ```
 
 * how to get realtime - monotonic time offset
