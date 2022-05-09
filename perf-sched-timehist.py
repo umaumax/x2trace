@@ -68,10 +68,11 @@ def main():
                     pid = int(ret.group("pid"))
                     tid = int(ret.group("tid"))
 
-            pid = 'CPU'
-            cpu = 'CPU:' + str(cpu)
+            cpu_pid = 'CPU'
+            cpu_tid = 'CPU:' + str(cpu)
 
             duration = run_time
+            start_timestamp = timestamp - duration
 
             # only show long sch_delay slice(unit is us)
             if sch_delay > 10:
@@ -83,8 +84,18 @@ def main():
                     "ph": 'X',
                     "ts": sch_delay_timestamp,
                     "dur": sch_delay,
-                    "pid": pid,
-                    "tid": cpu,
+                    "pid": cpu_pid,
+                    "tid": cpu_tid,
+                    "args": {}
+                }]
+                trace_list += [{
+                    "name": "sch_delay:{}({})".format(command, tid),
+                    "cat": "{}".format(command),
+                    "ph": 'X',
+                    "ts": sch_delay_timestamp,
+                    "dur": sch_delay,
+                    "pid": "{}({})".format(command, pid),
+                    "tid": tid,
                     "args": {}
                 }]
                 print("long sch_delay duration at: {}({}) {}us".format(command, tid, sch_delay), file=sys.stderr)
@@ -93,10 +104,20 @@ def main():
                 "name": "{}({})".format(command, tid),
                 "cat": "{}".format(command),
                 "ph": 'X',
-                "ts": timestamp - duration,
+                "ts": start_timestamp,
                 "dur": duration,
-                "pid": pid,
-                "tid": cpu,
+                "pid": cpu_pid,
+                "tid": cpu_tid,
+                "args": {}
+            }]
+            trace_list += [{
+                "name": "{}({})".format(command, tid),
+                "cat": "{}".format(command),
+                "ph": 'X',
+                "ts": start_timestamp,
+                "dur": duration,
+                "pid": "{}({})".format(command, pid),
+                "tid": tid,
                 "args": {}
             }]
 
@@ -104,8 +125,10 @@ def main():
             ph = 's'
             if task_name in task_map:
                 ph = 't'
+                task_map[task_name]['cnt'] += 1
+                task_map[task_name]['duration'] += duration
             else:
-                task_map[task_name] = True
+                task_map[task_name] = {'duration': duration, 'cnt': 1}
             trace_list += [{
                 "name": "{}({})".format(command, tid),
                 "cat": "{}".format(command),
@@ -119,6 +142,18 @@ def main():
             }]
 
     print(json.dumps(list(trace_list)))
+
+    duration_sum = 0.0
+    cnt_sum = 0
+    print("{:>24} {:>9}   {:>6}".format("name", "duration", "cnt"), file=sys.stderr)
+    for k, v in reversed(sorted(task_map.items(),
+                                key=lambda item: item[1]['duration'])):
+        duration = v['duration']
+        cnt = v['cnt']
+        print("{:>24} {:>9.3f}ms {:>6}".format(k, duration / 1000.0, cnt), file=sys.stderr)
+        duration_sum += duration
+        cnt_sum += cnt
+    print("{:>24} {:>9.3f}ms {:>6}".format("total", duration_sum / 1000.0, cnt_sum), file=sys.stderr)
 
 
 if __name__ == '__main__':
