@@ -265,6 +265,7 @@ def main():
     with open(args.output, mode='w') as f:
         f.write(json.dumps(list(trace_list)))
 
+    # print statistics of timehist result
     if len(task_map) > 0:
         duration_sum = 0.0
         cnt_sum = 0
