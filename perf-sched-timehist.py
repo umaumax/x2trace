@@ -25,6 +25,10 @@ def main():
         '--format',
         default='auto',
         help='auto, timehist, normal')
+    parser.add_argument(
+        '-o',
+        '--output',
+        default='/dev/stdout')
     parser.add_argument('input')
     parser.add_argument('args', nargs='*')
 
@@ -258,7 +262,8 @@ def main():
                     "args": {}
                 }]
 
-    print(json.dumps(list(trace_list)))
+    with open(args.output, mode='w') as f:
+        f.write(json.dumps(list(trace_list)))
 
     if len(task_map) > 0:
         duration_sum = 0.0
