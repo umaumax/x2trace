@@ -16,6 +16,11 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('-v', '--verbose', action='store_true')
     parser.add_argument(
+        '--timestamp-offset',
+        type=float,
+        default=0.0,
+        help='unit is sec')
+    parser.add_argument(
         '-f',
         '--format',
         default='auto',
@@ -69,6 +74,7 @@ def main():
                 cpu = int(ret.group("cpu"))
                 timestamp = float(ret.group("timestamp")) * \
                     1000.0 * 1000.0  # sec to us
+                timestamp += args.timestamp_offset
                 event_name = ret.group("event_name")
                 event_args = ret.group("event_args")
 
@@ -152,6 +158,7 @@ def main():
                     continue
 
                 timestamp = float(cols[0]) * 1000.0 * 1000.0  # sec to us
+                timestamp += args.timestamp_offset
                 cpu = int(cols[1].lstrip('[').rstrip(']'))
 
                 task_name = ' '.join(cols[2:-3])  # task name may have spaces
