@@ -88,7 +88,14 @@ sudo perf sched timehist > timehist.log
 # e.g. 1646610039.304117326
 sudo perf sched timehist | perl -pe 'BEGIN{$offset=shift} s/^ *([0-9]+.[0-9]+)/$1+$offset/e' $TIMESTAMP_OFFSET > timehist.log
 
-./perf-sched-timehist.py timehist.log > timehist-trace.log
+./perf-sched-timehist.py timehist.log -o timehist-trace.log
+```
+
+``` bash
+sudo perf record -T -a -e sched:sched_switch -e 'irq:*' -- sleep 1
+sudo perf script > perf.data.log
+
+./perf-sched-timehist.py perf.data.log -o perf.data-trace.log
 ```
 
 * how to get realtime - monotonic time offset
