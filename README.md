@@ -104,6 +104,8 @@ sudo perf script > perf.data.log
 
 ### NOTE
 * CPU名を明示的にするとsliceのデータの発生順の表示となる
+* chrome tracingではjson形式の他にzip形式もドラッグ・アンド・ドロップ可能であるので、`x2trace`でzip形式にする機能をつけるとよいかもしれない
+  * `perf-sched-timehist.py`にもzip出力の機能があると良いのかもしれない
 
 ## trace.json view tool
 自動的にファイルを読み込むことのできるちょうどよい方法がない(URLに読み込み先を指定して簡単にreloadなどができると理想)
