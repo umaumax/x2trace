@@ -86,6 +86,10 @@ cat strace-ttt-T-f-q-o.xargs.log | ./x2trace.awk > xargs.json
 ```
 
 ## perf-sched-timehist.py
+* 一番上の`CPU: XXX`をexpandすると各CPUごとのプロセスの割当がわかる
+  * expandしない場合にはヒストグラムでCPU使用率がわかる
+
+timehist形式
 ``` bash
 sudo perf sched record sleep 1
 
@@ -95,14 +99,17 @@ sudo perf sched timehist > timehist.log
 # e.g. 1646610039.304117326
 sudo perf sched timehist | perl -pe 'BEGIN{$offset=shift} s/^ *([0-9]+.[0-9]+)/$1+$offset/e' $TIMESTAMP_OFFSET > timehist.log
 
-./perf-sched-timehist.py timehist.log -o timehist-trace.log
+./perf-sched-timehist.py timehist.log -o timehist-trace.json
+
+./perf-sched-timehist.py data/perf-sched-timehist.txt -o perf-timehist-trace.json
 ```
 
+通常形式
 ``` bash
 sudo perf record -T -a -e sched:sched_switch -e 'irq:*' -- sleep 1
 sudo perf script > perf.data.log
 
-./perf-sched-timehist.py perf.data.log -o perf.data-trace.log
+./perf-sched-timehist.py perf.data.log -o perf.data-trace.json
 ```
 
 * how to get realtime - monotonic time offset
