@@ -1,0 +1,100 @@
+{"ts":450480781978227,"cpu": 7,"pid":3241856,"prev_pid":3241856,"prev_comm":"bpftrace       ","next_pid":      0,"next_comm":"swapper/7      "}
+{"ts":450480781984008,"cpu": 7,"pid":      0,"prev_pid":      0,"prev_comm":"swapper/7      ","next_pid":3241856,"next_comm":"bpftrace       "}
+{"ts":450480782014625,"cpu": 6,"pid":      0,"prev_pid":      0,"prev_comm":"swapper/6      ","next_pid":3241857,"next_comm":"tee            "}
+{"ts":450480782014946,"cpu": 7,"pid":3241856,"prev_pid":3241856,"prev_comm":"bpftrace       ","next_pid":      0,"next_comm":"swapper/7      "}
+{"ts":450480782024503,"cpu":11,"pid":      0,"prev_pid":      0,"prev_comm":"swapper/11     ","next_pid":3190218,"next_comm":"kworker/u32:2  "}
+{"ts":450480782025345,"cpu": 7,"pid":      0,"prev_pid":      0,"prev_comm":"swapper/7      ","next_pid":3241856,"next_comm":"bpftrace       "}
+{"ts":450480782027339,"cpu":11,"pid":3190218,"prev_pid":3190218,"prev_comm":"kworker/u32:2  ","next_pid":      0,"next_comm":"swapper/11     "}
+{"ts":450480782028441,"cpu": 8,"pid":      0,"prev_pid":      0,"prev_comm":"swapper/8      ","next_pid":2985788,"next_comm":"containerd-shim"}
+{"ts":450480782030334,"cpu": 6,"pid":3241857,"prev_pid":3241857,"prev_comm":"tee            ","next_pid":      0,"next_comm":"swapper/6      "}
+{"ts":450480782032859,"cpu": 8,"pid":2985780,"prev_pid":2985788,"prev_comm":"containerd-shim","next_pid":      0,"next_comm":"swapper/8      "}
+{"ts":450480782033220,"cpu": 6,"pid":      0,"prev_pid":      0,"prev_comm":"swapper/6      ","next_pid":3241857,"next_comm":"tee            "}
+{"ts":450480782033640,"cpu": 2,"pid":      0,"prev_pid":      0,"prev_comm":"swapper/2      ","next_pid":2985782,"next_comm":"containerd-shim"}
+{"ts":450480782033600,"cpu":10,"pid":      0,"prev_pid":      0,"prev_comm":"swapper/10     ","next_pid":2985787,"next_comm":"containerd-shim"}
+{"ts":450480782036726,"cpu":11,"pid":      0,"prev_pid":      0,"prev_comm":"swapper/11     ","next_pid":3190218,"next_comm":"kworker/u32:2  "}
+{"ts":450480782037027,"cpu": 2,"pid":2985780,"prev_pid":2985782,"prev_comm":"containerd-shim","next_pid":      0,"next_comm":"swapper/2      "}
+{"ts":450480782038700,"cpu":11,"pid":3190218,"prev_pid":3190218,"prev_comm":"kworker/u32:2  ","next_pid":      0,"next_comm":"swapper/11     "}
+{"ts":450480782039381,"cpu": 8,"pid":      0,"prev_pid":      0,"prev_comm":"swapper/8      ","next_pid":2985788,"next_comm":"containerd-shim"}
+{"ts":450480782040143,"cpu": 4,"pid":      0,"prev_pid":      0,"prev_comm":"swapper/4      ","next_pid":2986024,"next_comm":"containerd-shim"}
+{"ts":450480782041265,"cpu":11,"pid":      0,"prev_pid":      0,"prev_comm":"swapper/11     ","next_pid":3190218,"next_comm":"kworker/u32:2  "}
+{"ts":450480782042487,"cpu": 8,"pid":2985780,"prev_pid":2985788,"prev_comm":"containerd-shim","next_pid":      0,"next_comm":"swapper/8      "}
+{"ts":450480782044360,"cpu":11,"pid":3190218,"prev_pid":3190218,"prev_comm":"kworker/u32:2  ","next_pid":      0,"next_comm":"swapper/11     "}
+{"ts":450480782044380,"cpu": 8,"pid":      0,"prev_pid":      0,"prev_comm":"swapper/8      ","next_pid":2985788,"next_comm":"containerd-shim"}
+{"ts":450480782045122,"cpu": 3,"pid":      0,"prev_pid":      0,"prev_comm":"swapper/3      ","next_pid":3852609,"next_comm":"containerd     "}
+{"ts":450480782045513,"cpu": 4,"pid":2985780,"prev_pid":2986024,"prev_comm":"containerd-shim","next_pid":      0,"next_comm":"swapper/4      "}
+{"ts":450480782045513,"cpu": 9,"pid":      0,"prev_pid":      0,"prev_comm":"swapper/9      ","next_pid":2985785,"next_comm":"containerd-shim"}
+{"ts":450480782046104,"cpu":11,"pid":      0,"prev_pid":      0,"prev_comm":"swapper/11     ","next_pid":3190218,"next_comm":"kworker/u32:2  "}
+{"ts":450480782046665,"cpu": 8,"pid":2985780,"prev_pid":2985788,"prev_comm":"containerd-shim","next_pid":      0,"next_comm":"swapper/8      "}
+{"ts":450480782048588,"cpu": 8,"pid":      0,"prev_pid":      0,"prev_comm":"swapper/8      ","next_pid":2985788,"next_comm":"containerd-shim"}
+{"ts":450480782049330,"cpu": 9,"pid":2985780,"prev_pid":2985785,"prev_comm":"containerd-shim","next_pid":      0,"next_comm":"swapper/9      "}
+{"ts":450480782049991,"cpu":10,"pid":2985780,"prev_pid":2985787,"prev_comm":"containerd-shim","next_pid":      0,"next_comm":"swapper/10     "}
+{"ts":450480782051153,"cpu":12,"pid":      0,"prev_pid":      0,"prev_comm":"swapper/12     ","next_pid":3204723,"next_comm":"kworker/u32:4  "}
+{"ts":450480782052175,"cpu":10,"pid":      0,"prev_pid":      0,"prev_comm":"swapper/10     ","next_pid":2985787,"next_comm":"containerd-shim"}
+{"ts":450480782052275,"cpu":11,"pid":3190218,"prev_pid":3190218,"prev_comm":"kworker/u32:2  ","next_pid":      0,"next_comm":"swapper/11     "}
+{"ts":450480782053287,"cpu":12,"pid":3204723,"prev_pid":3204723,"prev_comm":"kworker/u32:4  ","next_pid":      0,"next_comm":"swapper/12     "}
+{"ts":450480782053748,"cpu": 8,"pid":2985780,"prev_pid":2985788,"prev_comm":"containerd-shim","next_pid":      0,"next_comm":"swapper/8      "}
+{"ts":450480782055832,"cpu":12,"pid":      0,"prev_pid":      0,"prev_comm":"swapper/12     ","next_pid":3204723,"next_comm":"kworker/u32:4  "}
+{"ts":450480782056814,"cpu": 8,"pid":      0,"prev_pid":      0,"prev_comm":"swapper/8      ","next_pid":2985788,"next_comm":"containerd-shim"}
+{"ts":450480782057124,"cpu":14,"pid":      0,"prev_pid":      0,"prev_comm":"swapper/14     ","next_pid":2353188,"next_comm":"kubelet        "}
+{"ts":450480782057916,"cpu": 9,"pid":      0,"prev_pid":      0,"prev_comm":"swapper/9      ","next_pid":2985785,"next_comm":"containerd-shim"}
+{"ts":450480782058216,"cpu":10,"pid":2985780,"prev_pid":2985787,"prev_comm":"containerd-shim","next_pid":      0,"next_comm":"swapper/10     "}
+{"ts":450480782058667,"cpu":11,"pid":      0,"prev_pid":      0,"prev_comm":"swapper/11     ","next_pid":3190218,"next_comm":"kworker/u32:2  "}
+{"ts":450480782059038,"cpu":13,"pid":      0,"prev_pid":      0,"prev_comm":"swapper/13     ","next_pid":  17236,"next_comm":"containerd     "}
+{"ts":450480782059338,"cpu":12,"pid":3204723,"prev_pid":3204723,"prev_comm":"kworker/u32:4  ","next_pid":      0,"next_comm":"swapper/12     "}
+{"ts":450480782059969,"cpu":10,"pid":      0,"prev_pid":      0,"prev_comm":"swapper/10     ","next_pid":2985787,"next_comm":"containerd-shim"}
+{"ts":450480782059959,"cpu":11,"pid":3190218,"prev_pid":3190218,"prev_comm":"kworker/u32:2  ","next_pid":      0,"next_comm":"swapper/11     "}
+{"ts":450480782060000,"cpu": 4,"pid":      0,"prev_pid":      0,"prev_comm":"swapper/4      ","next_pid":2986024,"next_comm":"containerd-shim"}
+{"ts":450480782060791,"cpu": 9,"pid":2985780,"prev_pid":2985785,"prev_comm":"containerd-shim","next_pid":      0,"next_comm":"swapper/9      "}
+{"ts":450480782061833,"cpu": 8,"pid":2985780,"prev_pid":2985788,"prev_comm":"containerd-shim","next_pid":      0,"next_comm":"swapper/8      "}
+{"ts":450480782062234,"cpu":11,"pid":      0,"prev_pid":      0,"prev_comm":"swapper/11     ","next_pid":3190218,"next_comm":"kworker/u32:2  "}
+{"ts":450480782062725,"cpu": 4,"pid":2985780,"prev_pid":2986024,"prev_comm":"containerd-shim","next_pid":      0,"next_comm":"swapper/4      "}
+{"ts":450480782063165,"cpu": 2,"pid":      0,"prev_pid":      0,"prev_comm":"swapper/2      ","next_pid":  24652,"next_comm":"kubelet        "}
+{"ts":450480782064067,"cpu":11,"pid":3190218,"prev_pid":3190218,"prev_comm":"kworker/u32:2  ","next_pid":      0,"next_comm":"swapper/11     "}
+{"ts":450480782064287,"cpu":13,"pid":  17235,"prev_pid":  17236,"prev_comm":"containerd     ","next_pid":      0,"next_comm":"swapper/13     "}
+{"ts":450480782064538,"cpu": 4,"pid":      0,"prev_pid":      0,"prev_comm":"swapper/4      ","next_pid":2986024,"next_comm":"containerd-shim"}
+{"ts":450480782065159,"cpu": 9,"pid":      0,"prev_pid":      0,"prev_comm":"swapper/9      ","next_pid":2985785,"next_comm":"containerd-shim"}
+{"ts":450480782066171,"cpu": 2,"pid":  24651,"prev_pid":  24652,"prev_comm":"kubelet        ","next_pid":      0,"next_comm":"swapper/2      "}
+{"ts":450480782067894,"cpu": 8,"pid":      0,"prev_pid":      0,"prev_comm":"swapper/8      ","next_pid":2985788,"next_comm":"containerd-shim"}
+{"ts":450480782068305,"cpu":10,"pid":2985780,"prev_pid":2985787,"prev_comm":"containerd-shim","next_pid":      0,"next_comm":"swapper/10     "}
+{"ts":450480782068345,"cpu":11,"pid":      0,"prev_pid":      0,"prev_comm":"swapper/11     ","next_pid":3190218,"next_comm":"kworker/u32:2  "}
+{"ts":450480782068686,"cpu": 9,"pid":2985780,"prev_pid":2985785,"prev_comm":"containerd-shim","next_pid":      0,"next_comm":"swapper/9      "}
+{"ts":450480782069738,"cpu": 8,"pid":2985780,"prev_pid":2985788,"prev_comm":"containerd-shim","next_pid":      0,"next_comm":"swapper/8      "}
+{"ts":450480782071070,"cpu": 4,"pid":2985780,"prev_pid":2986024,"prev_comm":"containerd-shim","next_pid":      0,"next_comm":"swapper/4      "}
+{"ts":450480782071771,"cpu":12,"pid":      0,"prev_pid":      0,"prev_comm":"swapper/12     ","next_pid":3204723,"next_comm":"kworker/u32:4  "}
+{"ts":450480782072343,"cpu":10,"pid":      0,"prev_pid":      0,"prev_comm":"swapper/10     ","next_pid":2985787,"next_comm":"containerd-shim"}
+{"ts":450480782073234,"cpu":12,"pid":3204723,"prev_pid":3204723,"prev_comm":"kworker/u32:4  ","next_pid":1084151,"next_comm":"containerd     "}
+{"ts":450480782076510,"cpu":11,"pid":3190218,"prev_pid":3190218,"prev_comm":"kworker/u32:2  ","next_pid":      0,"next_comm":"swapper/11     "}
+{"ts":450480782076641,"cpu": 4,"pid":      0,"prev_pid":      0,"prev_comm":"swapper/4      ","next_pid":2986024,"next_comm":"containerd-shim"}
+{"ts":450480782077222,"cpu":13,"pid":      0,"prev_pid":      0,"prev_comm":"swapper/13     ","next_pid":3204723,"next_comm":"kworker/u32:4  "}
+{"ts":450480782077302,"cpu": 9,"pid":      0,"prev_pid":      0,"prev_comm":"swapper/9      ","next_pid":2985785,"next_comm":"containerd-shim"}
+{"ts":450480782077352,"cpu":10,"pid":2985780,"prev_pid":2985787,"prev_comm":"containerd-shim","next_pid":      0,"next_comm":"swapper/10     "}
+{"ts":450480782079796,"cpu": 8,"pid":      0,"prev_pid":      0,"prev_comm":"swapper/8      ","next_pid":2985788,"next_comm":"containerd-shim"}
+{"ts":450480782079887,"cpu": 9,"pid":2985780,"prev_pid":2985785,"prev_comm":"containerd-shim","next_pid":      0,"next_comm":"swapper/9      "}
+{"ts":450480782080107,"cpu":11,"pid":      0,"prev_pid":      0,"prev_comm":"swapper/11     ","next_pid":3190218,"next_comm":"kworker/u32:2  "}
+{"ts":450480782080347,"cpu": 2,"pid":      0,"prev_pid":      0,"prev_comm":"swapper/2      ","next_pid":2684912,"next_comm":"containerd     "}
+{"ts":450480782081419,"cpu":11,"pid":3190218,"prev_pid":3190218,"prev_comm":"kworker/u32:2  ","next_pid":      0,"next_comm":"swapper/11     "}
+{"ts":450480782081550,"cpu": 8,"pid":2985780,"prev_pid":2985788,"prev_comm":"containerd-shim","next_pid":      0,"next_comm":"swapper/8      "}
+{"ts":450480782081670,"cpu":13,"pid":3204723,"prev_pid":3204723,"prev_comm":"kworker/u32:4  ","next_pid":      0,"next_comm":"swapper/13     "}
+{"ts":450480782081870,"cpu":10,"pid":      0,"prev_pid":      0,"prev_comm":"swapper/10     ","next_pid":2985787,"next_comm":"containerd-shim"}
+{"ts":450480782082251,"cpu": 4,"pid":2985780,"prev_pid":2986024,"prev_comm":"containerd-shim","next_pid":      0,"next_comm":"swapper/4      "}
+{"ts":450480782083884,"cpu":12,"pid":  17235,"prev_pid":1084151,"prev_comm":"containerd     ","next_pid":      0,"next_comm":"swapper/12     "}
+{"ts":450480782084786,"cpu":13,"pid":      0,"prev_pid":      0,"prev_comm":"swapper/13     ","next_pid":3204723,"next_comm":"kworker/u32:4  "}
+{"ts":450480782086569,"cpu": 4,"pid":      0,"prev_pid":      0,"prev_comm":"swapper/4      ","next_pid":2986024,"next_comm":"containerd-shim"}
+{"ts":450480782086819,"cpu": 2,"pid":  17235,"prev_pid":2684912,"prev_comm":"containerd     ","next_pid":      0,"next_comm":"swapper/2      "}
+{"ts":450480782087090,"cpu":13,"pid":3204723,"prev_pid":3204723,"prev_comm":"kworker/u32:4  ","next_pid":      0,"next_comm":"swapper/13     "}
+{"ts":450480782087120,"cpu":11,"pid":      0,"prev_pid":      0,"prev_comm":"swapper/11     ","next_pid":3190218,"next_comm":"kworker/u32:2  "}
+{"ts":450480782087501,"cpu": 9,"pid":      0,"prev_pid":      0,"prev_comm":"swapper/9      ","next_pid":2985785,"next_comm":"containerd-shim"}
+{"ts":450480782087932,"cpu":12,"pid":      0,"prev_pid":      0,"prev_comm":"swapper/12     ","next_pid":1084151,"next_comm":"containerd     "}
+{"ts":450480782088593,"cpu":13,"pid":      0,"prev_pid":      0,"prev_comm":"swapper/13     ","next_pid":3204723,"next_comm":"kworker/u32:4  "}
+{"ts":450480782089104,"cpu":11,"pid":3190218,"prev_pid":3190218,"prev_comm":"kworker/u32:2  ","next_pid":      0,"next_comm":"swapper/11     "}
+{"ts":450480782089555,"cpu":13,"pid":3204723,"prev_pid":3204723,"prev_comm":"kworker/u32:4  ","next_pid":      0,"next_comm":"swapper/13     "}
+{"ts":450480782089575,"cpu": 8,"pid":      0,"prev_pid":      0,"prev_comm":"swapper/8      ","next_pid":2985788,"next_comm":"containerd-shim"}
+{"ts":450480782089995,"cpu": 9,"pid":2985780,"prev_pid":2985785,"prev_comm":"containerd-shim","next_pid":      0,"next_comm":"swapper/9      "}
+{"ts":450480782091428,"cpu": 8,"pid":2985780,"prev_pid":2985788,"prev_comm":"containerd-shim","next_pid":      0,"next_comm":"swapper/8      "}
+{"ts":450480782091919,"cpu":12,"pid":  17235,"prev_pid":1084151,"prev_comm":"containerd     ","next_pid":      0,"next_comm":"swapper/12     "}
+{"ts":450480782091999,"cpu": 9,"pid":      0,"prev_pid":      0,"prev_comm":"swapper/9      ","next_pid":2985785,"next_comm":"containerd-shim"}
+{"ts":450480782092710,"cpu": 4,"pid":2985780,"prev_pid":2986024,"prev_comm":"containerd-shim","next_pid":      0,"next_comm":"swapper/4      "}
+{"ts":450480782094283,"cpu":12,"pid":      0,"prev_pid":      0,"prev_comm":"swapper/12     ","next_pid":1084151,"next_comm":"containerd     "}
+{"ts":450480782094293,"cpu": 5,"pid":      0,"prev_pid":      0,"prev_comm":"swapper/5      ","next_pid":   1485,"next_comm":"kube-apiserver "}
+{"ts":450480782094444,"cpu": 9,"pid":2985780,"prev_pid":2985785,"prev_comm":"containerd-shim","next_pid":      0,"next_comm":"swapper/9      "}
+{"ts":450480782096698,"cpu":10,"pid":2985780,"prev_pid":2985787,"prev_comm":"containerd-shim","next_pid":      0,"next_comm":"swapper/10     "}

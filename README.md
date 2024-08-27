@@ -82,6 +82,7 @@ cat strace-ttt-T-f-q-o.xargs.log | ./x2trace.awk > xargs.json
 ``` bash
 ./bpftrace-sched-switch.py --example | gzip -c > trace.json.gz
 ./bpftrace-sched-switch.py --example --pid-comm-cmdline ./data/pid-comm-cmdline.csv | gzip -c > trace.json.gz
+./bpftrace-sched-switch.py --pid-comm-cmdline ./data/pid-comm-cmdline.csv ./data/bpftrace-sched-switch.jsonl | gzip -c > trace.json.gz
 ```
 
 ## perf-sched-timehist.py
