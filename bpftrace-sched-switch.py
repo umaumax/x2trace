@@ -5,7 +5,9 @@ import argparse
 import sys
 from io import StringIO
 
+import pandas as pd
 
+# autopep8: off
 jsonl_data = """
 {"ts":450480781978227,"cpu": 7,"pid":3241856,"prev_pid":3241856,"prev_comm":"bpftrace       ","next_pid":      0,"next_comm":"swapper/7      "}
 {"ts":450480781984008,"cpu": 7,"pid":      0,"prev_pid":      0,"prev_comm":"swapper/7      ","next_pid":3241856,"next_comm":"bpftrace       "}
@@ -18,6 +20,7 @@ jsonl_data = """
 {"ts":450480782030334,"cpu": 6,"pid":3241857,"prev_pid":3241857,"prev_comm":"tee            ","next_pid":      0,"next_comm":"swapper/6      "}
 {"ts":450480782032859,"cpu": 8,"pid":2985780,"prev_pid":2985788,"prev_comm":"containerd-shim","next_pid":      0,"next_comm":"swapper/8      "}
 """
+# autopep8: on
 
 
 def main():
@@ -32,9 +35,20 @@ def main():
         default=sys.stdin)
     args = parser.parse_args()
 
+    pid_to_info = None
+    df = None
     if args.pid_comm_cmdline:
         # TODO: impl codes to load csv
-        pass
+        df = pd.read_csv(args.pid_comm_cmdline)
+        df.set_index('pid', inplace=True)
+
+        def pid_to_info(pid):
+            if pid in df.index:
+                comm_value = df.loc[pid, 'comm']
+                cmdline_value = df.loc[pid, 'cmdline']
+                return (comm_value, cmdline_value)
+            else:
+                return (None, None)
 
     trace_events = []
     input_file = args.infile
@@ -59,6 +73,17 @@ def main():
 
             # End event
             if event['prev_pid'] != 0:
+                event_args = {
+                    "pid": event['pid'],
+                    "tid": event['prev_pid'],
+                    "comm": event['prev_comm'].strip()
+                }
+                if pid_to_info:
+                    comm, cmdline = pid_to_info(event['prev_pid'])
+                    if comm and cmdline:
+                        event_args['comm'] = comm
+                        event_args['cmdline'] = cmdline
+
                 trace_events.append({
                     "name": event['prev_comm'].strip(),
                     "ph": "E",
@@ -68,11 +93,7 @@ def main():
                     "ts": event['ts'] / 1000,
                     # "dur": 0,
                     # "cat": "",
-                    "args": {
-                        "pid": event['pid'],
-                        "tid": event['prev_pid'],
-                        "comm": event['prev_comm'].strip()
-                    }
+                    "args": event_args,
                 })
 
     chrome_trace = {

@@ -78,6 +78,12 @@ seq 1 10 | strace -ttt -T -f -q -o strace-ttt-T-f-q-o.xargs.log xargs -L1 -I{} -
 cat strace-ttt-T-f-q-o.xargs.log | ./x2trace.awk > xargs.json
 ```
 
+## bpftrace-sched-switch.py
+``` bash
+./bpftrace-sched-switch.py --example | gzip -c > trace.json.gz
+./bpftrace-sched-switch.py --example --pid-comm-cmdline ./data/pid-comm-cmdline.csv | gzip -c > trace.json.gz
+```
+
 ## perf-sched-timehist.py
 ``` bash
 sudo perf sched record sleep 1
