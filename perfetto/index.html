@@ -1,9 +1,14 @@
 <!doctype html>
 <html lang="en-us">
-<link rel="shortcut icon" href="data:image/x-icon;," type="image/x-icon">
+<title>Perfetto file picker</title>
+<link rel="shortcut icon" id="favicon" type="image/png" href="https://perfetto.dev/assets/favicon.png">
 <body>
 
 <style>
+body {
+  font-family: Arial, sans-serif;
+  background-color: #f0f4f8;
+}
 pre {
   border: 1px solid #eee;
   margin: 10px 0;
@@ -12,12 +17,33 @@ pre {
   min-height: 100px;
 }
 
-body > * { margin: 20px; }
+body > * { margin-left: 20px; }
+body > button { margin-top: 10px; }
 
-#btn_fetch {  font-size: 14px; }
+button {
+  padding: 8px 12px;
+  border: none;
+  border-radius: 5px;
+  background-color: #0077cc;
+  color: #fff;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+button:hover {
+  background-color: #005999;
+  transform: translateY(-2px);
+}
+
+button:active {
+  background-color: #004477;
+  transform: translateY(1px);
+}
 </style>
 
-<select id="source" size=4>
+<h2>Trace File List</h2>
+<select id="source">
 <option selected>./trace-file</option>
 <option>https://storage.googleapis.com/perfetto-misc/example_android_trace_15s</option>
 <option>https://storage.googleapis.com/perfetto-misc/example_chrome_trace_10s.json</option>
@@ -26,7 +52,7 @@ body > * { margin: 20px; }
 
 <br>
 
-<button type="button" id="btn_fetch">Fetch and open trace</button>
+<button type="button" id="btn_fetch">Fetch and open trace at Perfetto</button>
 
 <br>
 
@@ -82,8 +108,8 @@ function openTrace(arrayBuffer, traceUrl) {
 
 // This is triggered when following the link from the Perfetto UI's sidebar.
 if (location.hash.startsWith('#reopen=')) {
- const traceUrl = location.hash.substr(8);
- fetchAndOpen(traceUrl);
+  const traceUrl = location.hash.substr(8);
+  fetchAndOpen(traceUrl);
 }
 
 btnFetch.onclick = () => fetchAndOpen(document.getElementById('source').value);
