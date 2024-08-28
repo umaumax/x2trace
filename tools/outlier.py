@@ -58,8 +58,11 @@ def main():
         if ph == 'B':
             stack.append(ts)
         elif ph == 'E':
-            duration = ts - stack.pop()
-            func_map[name]['durations'].append(duration / 1000.0)
+            if len(stack) > 0:
+                duration = ts - stack.pop()
+                func_map[name]['durations'].append(duration / 1000.0)
+            else:
+                print("[warn][{}] not found ph:B data at ph:E".format(name), file=sys.stderr)
         elif ph == 'X':
             duration = v['dur']
             func_map[name]['durations'].append(duration / 1000.0)
