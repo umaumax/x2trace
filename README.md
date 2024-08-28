@@ -127,3 +127,10 @@ sudo perf script > perf.data.log
 * [chromium \- Load json manually in chrome://tracing \- Stack Overflow]( https://stackoverflow.com/questions/49147681/load-json-manually-in-chrome-tracing )
   * [jlfwong/speedscope: 🔬 A fast, interactive web\-based viewer for performance profiles\.]( https://github.com/jlfwong/speedscope#usage )
 * [loading \- Programmatically open a json file in chrome://tracing, from a Chrome extension \- Stack Overflow]( https://stackoverflow.com/questions/42076654/programmatically-open-a-json-file-in-chrome-tracing-from-a-chrome-extension?noredirect=1&lq=1 )
+
+## perfetto
+引数で指定したファイルをネットワーク経由で取得してperfetto上に表示する
+``` bash
+cd ./perfetto
+./perfetto-server.py -p 60080 ../trace.json.gz
+```
