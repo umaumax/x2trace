@@ -4,6 +4,7 @@ import argparse
 import json
 import re
 import sys
+from prettytable import PrettyTable
 
 
 def remove_prefix(text, prefix):
@@ -37,7 +38,9 @@ def main():
     task_map = {}
 
     irq_id_name_dict = {}
+    sched_info = {}
     # input file example
+    #autopep8: off
     '''
                time    cpu  task name                       wait time  sch delay   run time
                             [tid/pid]                          (msec)     (msec)     (msec)
@@ -46,7 +49,10 @@ def main():
      4282978.125710 [0004]  fzf[8489/4922]                      0.000      0.002      0.010
      4282978.223179 [0009]  tmux: server[27077]                 0.000      0.002      1.462
     '''
+    #autopep8: on
     format = args.format
+    event_args_regex = re.compile(
+        r'prev_comm=(?P<prev_comm>.+) prev_pid=(?P<prev_pid>.+) prev_prio=(?P<prev_prio>[0-9]+) prev_state=(?P<prev_state>.+) ==> next_comm=(?P<next_comm>.+) next_pid=(?P<next_pid>.+) next_prio=(?P<next_prio>[0-9]+)')
     with open(args.input) as file:
         for line in file:
             cols = line.split()
@@ -121,7 +127,38 @@ def main():
                             soft_irq_action, soft_irq_id)
                         line_parsed_flag = True
                 elif event_name == 'sched:sched_switch':
-                    # temporary skipped
+                    # e.g.
+                    # perf   814 [000]  5610.1315104466:    sched:sched_switch: prev_comm=perf prev_pid=814 prev_prio=120 prev_state=R+ ==> next_comm=hoge_app next_pid=783 next_prio=50
+                    #
+                    ret = re.match(event_args_regex, event_args)
+                    if ret is not None:
+                        prev_comm = ret.group("prev_comm")
+                        prev_pid = int(ret.group("prev_pid"))
+                        prev_prio = int(ret.group("prev_prio"))
+                        prev_state = ret.group("prev_state")
+                        next_comm = ret.group("next_comm")
+                        next_pid = int(ret.group("next_pid"))
+                        next_prio = int(ret.group("next_prio"))
+
+                        key = '{}({})'.format(prev_comm, prev_pid)
+                        if key not in sched_info:
+                            sched_info[key] = {
+                                'context_switch': 0,
+                                'cache flush': 0,
+                                'vcs': 0,
+                                'nvcs': 0,
+                            }
+                        # basically same process
+                        # (There is a possibility of a different process with the same name.)
+                        if prev_comm == next_comm:
+                            pass
+                        else:
+                            sched_info[key]['cache flush'] += 1
+                        sched_info[key]['context_switch'] += 1
+                        if 'R' in prev_state:
+                            sched_info[key]['nvcs'] += 1
+                        else:
+                            sched_info[key]['vcs'] += 1
                     line_parsed_flag = True
                     continue
                 else:
@@ -264,6 +301,23 @@ def main():
 
     with open(args.output, mode='w') as f:
         f.write(json.dumps(list(trace_list)))
+
+    if len(sched_info) > 0:
+        for k, v in sched_info.items():
+            v['cache flush(%)'] = v['cache flush'] / \
+                v['context_switch'] * 100.0
+            v['vcs(%)'] = v['vcs'] / v['context_switch'] * 100.0
+            v['nvcs(%)'] = v['nvcs'] / v['context_switch'] * 100.0
+
+        header = ['name'] + list(list(sched_info.values())[0].keys())
+        t = PrettyTable(header)
+        t.float_format = ".3"
+        t.align = "r"
+        t.align['name'] = "l"
+        for k, v in sorted(sched_info.items(),
+                           key=lambda item: item[0]):
+            t.add_row([k] + list(v.values()))
+        print(t)
 
     # print statistics of timehist result
     if len(task_map) > 0:
