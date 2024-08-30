@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
 
+import csv
 import json
 import argparse
 import sys
+from collections import defaultdict
 from io import StringIO
 
 import pandas as pd
@@ -41,6 +43,8 @@ def main():
         # TODO: impl codes to load csv
         df = pd.read_csv(args.pid_comm_cmdline)
         df.set_index('pid', inplace=True)
+        # pandas set nan at "", so fill nan as ""
+        df = df.fillna("")
 
         def pid_to_info(pid):
             if pid in df.index:
@@ -51,54 +55,125 @@ def main():
                 return (None, None)
 
     trace_events = []
+    trace_event_map = defaultdict(list)
+    pid_to_comm = {}
     input_file = args.infile
     if args.example:
         input_file = StringIO(jsonl_data.strip())
-    with input_file as f:
-        for line in f.readlines():
-            event = json.loads(line.strip())
+    # NOTE: for json format
+    # with input_file as f:
+        # for line in f.readlines():
+        # event = json.loads(line.strip())
+    # NOTE: for csv format
+    dtype_dict = {
+        'ts': 'int64',
+        'dur': 'int64',
+        'cpu': 'int64',
+        'pid': 'int64',
+        'comm': 'str',
+    }
+    with pd.read_csv(input_file, dtype=dtype_dict, chunksize=10000) as reader:
+        for chunk in reader:
+            chunk = chunk.fillna("")
+            print(f'✅️[INFO] loaded data [{len(chunk)}]', file=sys.stderr)
+            for index, event in chunk.iterrows():
+                cpu = event['cpu']
+                if 'pid' in event:
+                    pid = event['pid']
+                    if not isinstance(event['dur'], (int, float)) or not isinstance(
+                            cpu, (int, float)) or not isinstance(pid, (int, float)):
+                        print(
+                            f'🔥[WARN] broken data at L{index+1}\n{event}',
+                            file=sys.stderr)
+                        continue
+                    ts = int(event['ts']) / 1000
+                    dur = int(event['dur']) / 1000
+                    comm = event['comm'].strip()
+                    if comm:
+                        pid_to_comm[pid] = comm
+                    else:
+                        if pid in pid_to_comm:
+                            comm = pid_to_comm[pid]
+                        else:
+                            comm = 'Unknown'
+                    name = "{}[{}]".format(comm, pid)
+                    trace_events.append({
+                        "name": name,
+                        "ph": "X",
+                        # "pid": 0,
+                        "tid": "CPU {}".format(cpu),
+                        "ts": ts,
+                        "dur": dur,
+                    })
+                    continue
 
-            # Begin event
-            if event['next_pid'] != 0:
-                trace_events.append({
-                    "name": event['next_comm'].strip(),
-                    "ph": "B",
-                    # "pid": 0,
-                    "tid": event['cpu'],
-                    # ts is usually in microseconds for Chrome trace
-                    "ts": event['ts'] / 1000,
-                    # "dur": 0,
-                    # "cat": "",
-                })
+                event['prev_comm'] = event['comm']
+                event['next_comm'] = event['comm']
 
-            # End event
-            if event['prev_pid'] != 0:
-                event_args = {
-                    "pid": event['pid'],
-                    "tid": event['prev_pid'],
-                    "comm": event['prev_comm'].strip()
-                }
-                if pid_to_info:
-                    comm, cmdline = pid_to_info(event['prev_pid'])
-                    if comm and cmdline:
-                        event_args['comm'] = comm
-                        event_args['cmdline'] = cmdline
+                # Begin event
+                if event['next_pid'] != "":
+                    event['next_pid'] = int(event['next_pid'])
+                    name = "{}[{}]".format(
+                        event['next_comm'].strip(), event['next_pid'])
+                    trace_event_map[cpu].append({
+                        "name": name,
+                        "ph": "B",
+                        # "pid": 0,
+                        "tid": "CPU {}".format(cpu),
+                        # ts is usually in microseconds for Chrome trace
+                        "ts": event['ts'] / 1000,
+                        # "dur": 0,
+                        # "cat": "",
+                    })
 
-                trace_events.append({
-                    "name": event['prev_comm'].strip(),
-                    "ph": "E",
-                    # "pid": 0,
-                    "tid": event['cpu'],
-                    # ts is usually in microseconds for Chrome trace
-                    "ts": event['ts'] / 1000,
-                    # "dur": 0,
-                    # "cat": "",
-                    "args": event_args,
-                })
+                # End event
+                if event['prev_pid'] != "":
+                    event['prev_pid'] = int(event['prev_pid'])
+                    # pid = event['pid']
+                    tid = event['prev_pid']
+                    event_args = {
+                        # "pid": pid,
+                        "tid": tid,
+                        "comm": event['prev_comm'].strip()
+                    }
+                    if pid_to_info:
+                        comm, cmdline = pid_to_info(event['prev_pid'])
+                        if comm and cmdline:
+                            event_args['comm'] = comm
+                            event_args['cmdline'] = cmdline
+                            print(
+                                f"[INFO] {comm:<15s}[{event['pid']:<7d}] {cmdline}",
+                                file=sys.stderr)
+
+                    name = "{}[{}]".format(event['prev_comm'].strip(), tid)
+                    if len(
+                            trace_event_map[cpu]) > 0 and trace_event_map[cpu][-1]['name'] == name:
+                        begin_trace_event = trace_event_map[cpu].pop()
+                        trace_events.append({
+                            "name": name,
+                            "ph": "X",
+                            # "pid": 0,
+                            "tid": "CPU {}".format(cpu),
+                            # ts is usually in microseconds for Chrome trace
+                            "ts": begin_trace_event['ts'],
+                            "dur": event['ts'] / 1000 - begin_trace_event['ts'],
+                            # "dur": 0,
+                            # "cat": "",
+                            "args": event_args,
+                        })
+                    else:
+                        print(
+                            "[WARN] not found begin trace of {}".format(name),
+                            file=sys.stderr)
 
     chrome_trace = {
         "traceEvents": trace_events
     }
+
+    for cpu, events in trace_event_map.items():
+        print(
+            "[WARN] {} incompleted traces {}".format(cpu, events),
+            file=sys.stderr)
 
     with open(args.output_filepath, "w") as f:
         json.dump(chrome_trace, f)
