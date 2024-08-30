@@ -4,8 +4,25 @@ from http.server import HTTPServer, SimpleHTTPRequestHandler, test
 import os
 import argparse
 import sys
+import socket
+import psutil
+
+COLOR_RED = '\033[31m'
+COLOR_GREEN = '\033[32m'
+COLOR_RESET = '\033[0m'
 
 global args
+
+
+def get_all_ip_addresses():
+    ip_addresses = []
+    for interface, addrs in psutil.net_if_addrs().items():
+        if 'br-' in interface or 'docker' in interface:
+            continue
+        for addr in addrs:
+            if addr.family == socket.AF_INET:
+                ip_addresses.append((interface, addr.address))
+    return ip_addresses
 
 
 class CORSRequestHandler (SimpleHTTPRequestHandler):
@@ -34,6 +51,14 @@ def main():
         os.symlink(args.trace_file, dst_file)
         if args.verbose:
             print(f'[INFO] created {dst_file} -> {args.trace_file}')
+    all_ips = get_all_ip_addresses()
+    print("[💡Hint]", file=sys.stderr)
+    for interface, ip in all_ips:
+        url = f"http://{ip}:{args.port}/"
+        print(
+            f"{COLOR_GREEN}{url:28s}{COLOR_RESET} ({interface})",
+            file=sys.stderr)
+
     test(CORSRequestHandler, HTTPServer, port=args.port)
 
 
