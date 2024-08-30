@@ -70,7 +70,7 @@ async function fetchAndOpen(traceUrl) {
   // Error checcking is left as an exercise to the reader.
   const blob = await resp.blob();
   const arrayBuffer = await blob.arrayBuffer();
-  logs.innerText += `fetch() complete, now passing to ui.perfetto.dev\n`;
+  logs.innerText += `fetch() complete ${(arrayBuffer.byteLength/1024/1024).toFixed(2)} MB, now passing to ui.perfetto.dev\n`;
   openTrace(arrayBuffer, traceUrl);
 }
 
