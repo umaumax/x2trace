@@ -131,6 +131,15 @@ sudo perf script > perf.data.log
 ## perfetto
 引数で指定したファイルをネットワーク経由で取得してperfetto上に表示する
 ``` bash
+pip install "git+https://github.com/umaumax/x2trace.git#subdirectory=perfetto"
+perfetto-server $TARGET_TRACE_FILEPATH
+```
+
+``` bash
 cd ./perfetto
-./perfetto-server.py -p 60080 ../trace.json.gz
+pip install . # for users
+pip install -e . # for developers
+# or
+cd ./perfetto_server
+./main.py -p 60080 ../../trace.json.gz
 ```
