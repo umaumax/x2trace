@@ -7,6 +7,7 @@ import sys
 import socket
 import psutil
 import importlib.resources
+import tempfile
 
 COLOR_RED = '\033[31m'
 COLOR_GREEN = '\033[32m'
@@ -31,10 +32,13 @@ class CORSRequestHandler (SimpleHTTPRequestHandler):
         if self.path == '/' or self.path == '/index.html':
             target_file = 'index.html'
             if not os.path.exists(target_file):
-                print(
-                    f'[INFO] load {target_file} file from {__package__} package data')
-                index_html_path = importlib.resources.files(
-                    __package__).joinpath(target_file)
+                index_html_path = os.path.join(os.path.dirname(
+                    os.path.abspath(__file__)), target_file)
+                if __package__:
+                    print(
+                        f'[INFO] load {target_file} file from {__package__} package data')
+                    index_html_path = importlib.resources.files(
+                        __package__).joinpath(target_file)
                 with open(index_html_path, 'r', encoding='utf-8') as file:
                     content = file.read()
                 self.send_response(200)
@@ -58,17 +62,25 @@ def main():
 
     global args
     args, extra_args = parser.parse_known_args()
-    if args.trace_file:
-        dst_file = './trace-file'
-        if not os.path.isfile(args.trace_file):
-            sys.exit(f'[ERROR] {args.trace_file} not found.')
-        if os.path.abspath(args.trace_file) == os.path.abspath(dst_file):
-            sys.exit(f'[ERROR] do not use {args.trace_file}')
-        if os.path.islink(dst_file):
-            os.unlink(dst_file)
-        os.symlink(args.trace_file, dst_file)
-        if args.verbose:
-            print(f'[INFO] created {dst_file} -> {args.trace_file}')
+
+    with tempfile.TemporaryDirectory() as temp_dir:
+        os.chdir(temp_dir)
+        print(f"[INFO] create and change working directory to {temp_dir}")
+        if args.trace_file:
+            dst_file = './trace-file'
+            if not os.path.isfile(args.trace_file):
+                sys.exit(f'[ERROR] {args.trace_file} not found.')
+            if os.path.abspath(args.trace_file) == os.path.abspath(dst_file):
+                sys.exit(f'[ERROR] do not use {args.trace_file}')
+            if os.path.islink(dst_file):
+                os.unlink(dst_file)
+            os.symlink(args.trace_file, dst_file)
+            if args.verbose:
+                print(f'[INFO] created {dst_file} -> {args.trace_file}')
+        run_server(args.port)
+
+
+def run_server(port):
     all_ips = get_all_ip_addresses()
     print("[💡Hint]", file=sys.stderr)
     for interface, ip in all_ips:
@@ -77,7 +89,7 @@ def main():
             f"{COLOR_GREEN}{url:28s}{COLOR_RESET} ({interface})",
             file=sys.stderr)
 
-    test(CORSRequestHandler, HTTPServer, port=args.port)
+    test(CORSRequestHandler, HTTPServer, port=port)
 
 
 if __name__ == '__main__':
