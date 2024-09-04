@@ -1,0 +1,13 @@
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "perfetto-server"
+version = "0.1.0"
+description = "cli web server command to open trace.json at Perfetto web UI"
+license = { text = "MIT License" }
+dependencies = []
+
+[project.scripts]
+perfetto-server = "perfetto_server:main.main"

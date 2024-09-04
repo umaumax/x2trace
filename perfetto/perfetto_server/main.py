@@ -6,6 +6,7 @@ import argparse
 import sys
 import socket
 import psutil
+import importlib.resources
 
 COLOR_RED = '\033[31m'
 COLOR_GREEN = '\033[32m'
@@ -26,6 +27,23 @@ def get_all_ip_addresses():
 
 
 class CORSRequestHandler (SimpleHTTPRequestHandler):
+    def do_GET(self):
+        if self.path == '/' or self.path == '/index.html':
+            target_file = 'index.html'
+            if not os.path.exists(target_file):
+                print(
+                    f'[INFO] load {target_file} file from {__package__} package data')
+                index_html_path = importlib.resources.files(
+                    __package__).joinpath(target_file)
+                with open(index_html_path, 'r', encoding='utf-8') as file:
+                    content = file.read()
+                self.send_response(200)
+                self.send_header('Content-type', 'text/html')
+                self.end_headers()
+                self.wfile.write(content.encode('utf-8'))
+                return
+        super(CORSRequestHandler, self).do_GET()
+
     def end_headers(self):
         self.send_header('Access-Control-Allow-Origin', '*')
         SimpleHTTPRequestHandler.end_headers(self)
