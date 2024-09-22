@@ -14,11 +14,12 @@ class StackLayer:
     key: str
     next: Dict[str, 'StackLayer']
     self_count: int
-    recursive_count: int
+    recursive_count: int  # Total counts of upper stacks
+    max_count: int  # Maximum counts of one stack in upper stacks
 
     def add_count(self, keys):
         if len(keys) == 0:
-            return
+            return 0
 
         first_key = keys[0]
         if len(keys) == 1:
@@ -27,12 +28,15 @@ class StackLayer:
             # self.self_count += 1 + random.randrange(10, 20, 2)
             self.self_count += 1
             self.recursive_count += 1
-            return
+            self.max_count = max(self.max_count, self.self_count)
+            return self.max_count
         self.recursive_count += 1
         if first_key not in self.next:
-            self.next[first_key] = StackLayer(first_key, {}, 0, 0)
+            self.next[first_key] = StackLayer(first_key, {}, 0, 0, 0)
         next_stack_layer = self.next[first_key]
-        next_stack_layer.add_count(keys[1:])
+        child_max_count = next_stack_layer.add_count(keys[1:])
+        self.max_count = max(self.max_count, child_max_count)
+        return self.max_count
 
     def dump(self, indent=0):
         print(f'{"  "*indent}{self.key}:{self.self_count}({self.recursive_count})')
@@ -41,12 +45,14 @@ class StackLayer:
             value.dump(indent)
 
     def gen_icicle_data(self, parent_id='',
-                        ids=None, labels=None, parents=None, values=None):
+                        ids=None, labels=None, parents=None, values=None, threshold_count=0):
         if not parent_id:
             ids = []
             labels = []
             parents = []
             values = []
+        if self.max_count < threshold_count:
+            return (ids, labels, parents, values)
         label = self.key
         value = self.self_count
         id = f'{parent_id} - {label}'
@@ -55,7 +61,8 @@ class StackLayer:
         parents.append(parent_id)
         values.append(value)
         for key, value in self.next.items():
-            value.gen_icicle_data(id, ids, labels, parents, values)
+            value.gen_icicle_data(
+                id, ids, labels, parents, values, threshold_count)
         return (ids, labels, parents, values)
 
 
@@ -87,8 +94,8 @@ def parse_data_from_stream(stream):
 
 
 def process_data(data):
-    ustack_base_stack_layer = StackLayer('[ustack]', {}, 0, 0)
-    kstack_base_stack_layer = StackLayer('[kstack]', {}, 0, 0)
+    ustack_base_stack_layer = StackLayer('[ustack]', {}, 0, 0, 0)
+    kstack_base_stack_layer = StackLayer('[kstack]', {}, 0, 0, 0)
     for section in data:
         print(f"Section: {section['type']}")
         frames = list(reversed(section['frames']))
@@ -122,10 +129,15 @@ def process_data(data):
                "Australia - Football", "Australia - Football", "Australia - Rugby",
                "Australia - Rugby"
                ]
+    # TODO: 一定時間中に発生した回数が客観的に多いのか、少ないのかがわかるようになるとよい
     # TODO: 実際のデータを利用すること
     # TODO: timeline?や分割する時間間隔の調整ができると面白いかもしれない
-    user_ids, user_labels, user_parents, user_values = ustack_base_stack_layer.gen_icicle_data()
-    kernel_ids, kernel_labels, kernel_parents, kernel_values = kstack_base_stack_layer.gen_icicle_data()
+    # TODO: 表示の閾値をGUI制御できるようにすること
+    threshold_count = 10
+    user_ids, user_labels, user_parents, user_values = ustack_base_stack_layer.gen_icicle_data(
+        threshold_count=threshold_count)
+    kernel_ids, kernel_labels, kernel_parents, kernel_values = kstack_base_stack_layer.gen_icicle_data(
+        threshold_count=threshold_count)
     user_parents[0] = '[root]'
     kernel_parents[0] = '[root]'
     ids = ['[root]'] + user_ids + kernel_ids
@@ -149,6 +161,11 @@ def process_data(data):
 
     st.plotly_chart(fig)
 
+
+st.set_page_config(
+    page_title="bpftrace stack dashboard app",
+    layout="wide",
+)
 
 if __name__ == "__main__":
     with open('bpftrace.log', 'r') as f:
