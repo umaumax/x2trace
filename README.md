@@ -137,8 +137,8 @@ perfetto-server $TARGET_TRACE_FILEPATH
 
 ``` bash
 cd ./perfetto
-pip install . # for users
-pip install -e . # for developers
+# pip install . # for users
+pip install -e . # for developers # 現状は設定ファイルが足りていない可能性があり、こちらを利用すること
 # or
 cd ./perfetto_server
 ./main.py -p 60080 ../../trace.json.gz

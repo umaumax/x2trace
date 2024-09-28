@@ -100,7 +100,7 @@ def main():
                     trace_events.append({
                         "name": name,
                         "ph": "X",
-                        # "pid": 0,
+                        "pid": 0,
                         "tid": "CPU {}".format(cpu),
                         "ts": ts,
                         "dur": dur,
@@ -118,7 +118,7 @@ def main():
                     trace_event_map[cpu].append({
                         "name": name,
                         "ph": "B",
-                        # "pid": 0,
+                        "pid": 0,
                         "tid": "CPU {}".format(cpu),
                         # ts is usually in microseconds for Chrome trace
                         "ts": event['ts'] / 1000,
@@ -152,7 +152,7 @@ def main():
                         trace_events.append({
                             "name": name,
                             "ph": "X",
-                            # "pid": 0,
+                            "pid": 0,
                             "tid": "CPU {}".format(cpu),
                             # ts is usually in microseconds for Chrome trace
                             "ts": begin_trace_event['ts'],

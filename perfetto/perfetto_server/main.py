@@ -64,14 +64,14 @@ def main():
     args, extra_args = parser.parse_known_args()
 
     with tempfile.TemporaryDirectory() as temp_dir:
+        if args.trace_file:
+            abs_trace_file = os.path.abspath(args.trace_file)
         os.chdir(temp_dir)
         print(f"[INFO] create and change working directory to {temp_dir}")
         if args.trace_file:
             dst_file = './trace-file'
-            if not os.path.isfile(args.trace_file):
+            if not os.path.isfile(abs_trace_file):
                 sys.exit(f'[ERROR] {args.trace_file} not found.')
-            if os.path.abspath(args.trace_file) == os.path.abspath(dst_file):
-                sys.exit(f'[ERROR] do not use {args.trace_file}')
             if os.path.islink(dst_file):
                 os.unlink(dst_file)
             os.symlink(args.trace_file, dst_file)
